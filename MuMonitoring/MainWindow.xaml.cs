@@ -23,6 +23,12 @@ namespace MuMonitoring
         public MainWindow()
         {
             InitializeComponent();
+            CustomInit();
+        }
+
+        private void CustomInit()
+        {
+            BackendCom.Init();
         }
 
         private void ExitBtn_Click(object sender, RoutedEventArgs e)

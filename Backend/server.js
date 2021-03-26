@@ -1,14 +1,14 @@
 const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+//const connectDB = require('./config/db');
 const morgan = require('morgan');
 // const bodyParser = require('body-parser');
 
 // Load config
 dotenv.config({path: './config/config.env'});
 //Connect db
-connectDB();
+//connectDB();
 
 const app = express();
 
