@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MuMonitoring.Static;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,12 +29,13 @@ namespace MuMonitoring
 
         private void CustomInit()
         {
+            Log.Start();
             BackendCom.Init();
         }
 
         private void ExitBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            Close();
         }
     }
 }

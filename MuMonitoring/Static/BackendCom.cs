@@ -1,4 +1,5 @@
 ﻿using MuMonitoring.DTOs;
+using MuMonitoring.Static;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,12 @@ namespace MuMonitoring
             return "";
         }
 
+        private static async Task<string> sendPost(string url_, StringContent content)
+        {
+            var res = m_client.PostAsync(url_, content).Result;
+            var resString = await res.Content.ReadAsStringAsync();
+            return resString;
+        }
 
         public static bool Authenticate(Credentials credentials)
         {
@@ -45,8 +52,11 @@ namespace MuMonitoring
             o["username"] = credentials.username;
             o["op"] = "FirstAuth";
             var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
-            m_client.PostAsync(BackendURL, httpContent);
-
+            //var response = await m_client.PostAsync(BackendURL, httpContent);
+            //var res = response.Result;
+            //var resString = response.Content.ReadAsStringAsync().Result;
+            string res = sendPost(BackendURL, httpContent).Result;
+            Log.Write(res);
             return true;
         }
     }

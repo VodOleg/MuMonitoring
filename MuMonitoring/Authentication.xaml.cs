@@ -33,12 +33,6 @@ namespace MuMonitoring
         {
             Credentials userID = new Credentials(UserNameID.Text);
             BackendCom.Authenticate(userID);
-            //string url = "http://127.0.0.1:3000/";
-            //string jsonedContent = $"{{\"text\":\"Hello world {userID}\"}}";
-            //var httpContent = new StringContent(jsonedContent, Encoding.UTF8, "application/json");
-            //if (m_pClient==null)
-            //    m_pClient = new HttpClient();
-            //m_pClient.PostAsync(url, httpContent);
     }
     }
 }

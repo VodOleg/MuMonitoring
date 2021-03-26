@@ -13,6 +13,7 @@ class MuMonitor_Be{
         }else{
             // create user document
             this.db.createUser(username);
+            return true;
         }
         
     }

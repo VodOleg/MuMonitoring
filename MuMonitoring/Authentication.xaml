@@ -14,7 +14,7 @@
                 <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" HorizontalAlignment="Center">User Name:</TextBlock>
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center">Name your Session (will be used to identify your session):</TextBlock>
             <TextBox Grid.Row="0" TextWrapping="NoWrap" x:Name="UserNameID" HorizontalAlignment="Center" Height="30" Width="250"  Text="" VerticalAlignment="Center" />
             <!--<TextBlock Grid.Row="1" HorizontalAlignment="Center">Aws Secret Access Key:</TextBlock>
             <TextBox Grid.Row="1" x:Name="awsSecretKey" HorizontalAlignment="Center" Height="30" Width="250" TextWrapping="NoWrap" Text="" VerticalAlignment="Center" />

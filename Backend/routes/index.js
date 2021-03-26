@@ -13,8 +13,11 @@ router.get('/', (req,res)=>{
 // @route POST /
 router.post('/', (req,res)=>{
     console.log(req.body);
-    MuMonitorBE.userAuth(req.body.username)
-    res.send("OK");
+    let authenticated = MuMonitorBE.userAuth(req.body.username);
+    let response = authenticated ? "user exists" : "ok";  
+    console.log(`sending ${response}`);
+    //res.send(response);
+    res.status(200).json({message:response});
 })
 
 // @desc Login/Landing page

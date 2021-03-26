@@ -55,7 +55,8 @@ class DB_ {
 
     updateUser(username, obj){
         // update with new mu clients
-        // update clients in different func?     
+        // update clients in different func? 
+        // when updating reset the watch dog counter    
     }
 
     
