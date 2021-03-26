@@ -5,9 +5,16 @@ class MuMonitor_Be{
         this.db = db_;
     }
 
-    userAuth(username){
+    async userAuth(username){
         //check if user already exist
-        this.db.checkifUserExist(username)
+        let userExist = await this.db.checkifUserExist(username);
+        if (userExist){
+            return false;
+        }else{
+            // create user document
+            this.db.createUser(username);
+        }
+        
     }
 }
 

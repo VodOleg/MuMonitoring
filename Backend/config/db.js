@@ -31,21 +31,37 @@ class DB_ {
         }
     }
 
-    checkifUserExist(username){
-        console.log(username)
-        this.collection.findOne({"username":username}, (err, user)=>{
-            if(err){
-                console.log(err);
-            }
-            else{
-                console.log(user);
-            }
-        })
+    async checkifUserExist(username){
+        let items = await this.collection.find({"username":username}).toArray();
+        return items.length > 0;
     }
+
+    createUser(username){
+        this.collection.insertOne({
+            username:username,
+            muclients:{
+
+            }
+        }
+        )
+    }
+
+    /** TODO: __________________ */
+
+    removeUser(username){
+        // from DB, i don't want to store unactive users
+        // users will be added to the db on activity
+    }
+
+    updateUser(username, obj){
+        // update with new mu clients
+        // update clients in different func?     
+    }
+
+    
 
 }
 
 const db = new DB_(process.env.MONGO_URI, process.env.DB_NAME)
-// const db = new DB_(process.env.MONGO_URI, "")
 
 module.exports = db;
