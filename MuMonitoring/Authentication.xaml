@@ -26,6 +26,6 @@
             <TextBlock Grid.Row="3" Name="msgText" Foreground="Red" HorizontalAlignment="Center"></TextBlock>
             <Button Width="70" Height="30" Grid.Row="3" Click="Button_Click">Connect</Button>
         </Grid>
-        
+
     </Grid>
 </UserControl>
