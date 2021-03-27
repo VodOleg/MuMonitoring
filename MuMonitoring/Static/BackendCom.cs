@@ -15,6 +15,9 @@ namespace MuMonitoring
         private static string BackendURL = "http://127.0.0.1:3000";
         private static HttpClient m_client;
 
+        // API strings 
+        private static string m_Const_startSession = "/StartSession";
+
         public static bool isConnected()
         {
             return m_client != null;
@@ -50,12 +53,11 @@ namespace MuMonitoring
             JObject o = new JObject();
 
             o["username"] = credentials.username;
-            o["op"] = "FirstAuth";
             var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
             //var response = await m_client.PostAsync(BackendURL, httpContent);
             //var res = response.Result;
             //var resString = response.Content.ReadAsStringAsync().Result;
-            string res = sendPost(BackendURL, httpContent).Result;
+            string res = sendPost(BackendURL+m_Const_startSession, httpContent).Result;
             Log.Write(res);
             return true;
         }

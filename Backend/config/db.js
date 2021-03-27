@@ -1,7 +1,9 @@
 const mongodb = require('mongodb');
+const UF = require('../BEService/Utils');
 
 class DB_ {
     constructor(db_URI, db_name){
+        this.dbConnected = false;
         this.connectDB(db_URI,db_name);
         this.conn = null;
         this.collection = {}
@@ -19,7 +21,10 @@ class DB_ {
                     // connection was succesfull
                     //console.log(db);
                     this.conn = client.db(db_name);
-                    this.collection = this.conn.collection(process.env.COLLECTION);
+                    
+                    this.dbConnected = true;
+
+                    this.collection = this.conn.collection(process.env.USER_COLLECTION);
                     
                     console.log(`MongoDB Connected`);
                 }
@@ -34,6 +39,21 @@ class DB_ {
     async checkifUserExist(username){
         let items = await this.collection.find({"username":username}).toArray();
         return items.length > 0;
+    }
+
+    async getClientConfiguration(){
+        while (!this.dbConnected){
+            await UF.sleep(1000);
+        }
+        console.log("requesting clients config")
+        let configCollection = this.conn.collection(process.env.CONFIG_COLLECTION);
+        let items = await configCollection.find().toArray();
+        if (items.length < 1){
+            console.error("Did not find clients configuration in the database, exit.");
+            process.exit(1);
+        }
+        //should be only one config, in any other case this shoould be re implemented
+        return items[0];
     }
 
     createUser(username){
