@@ -1,4 +1,5 @@
 ﻿using MuMonitoring.DTOs;
+using MuMonitoring.Static;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,12 +28,44 @@ namespace MuMonitoring
         {
             InitializeComponent();
             m_pClient = new HttpClient();
-    }
+        }
+
+        private void writeMessage(string message)
+        {
+            this.Dispatcher.Invoke(() => {
+                this.msgText.Text = message;
+
+            });
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Credentials userID = new Credentials(UserNameID.Text);
-            BackendCom.Authenticate(userID);
+            BackendCom.Authenticate(userID).ContinueWith((task)=> {
+                dynamic response = task.Result;        
+                if (response != null && (bool)response.success)
+                {
+                    // call 
+                    userID.sessionKey = (string)response.data.SessionKey;
+                    ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
+                    StateManager.Init(userID, config);
+                }
+                else
+                {
+                    string message = "Failed creating session: ";
+                    if (response != null)
+                    {
+                        message += response.message;
+
+                    }
+                    else
+                    {
+                        message += "no connection to server";
+                    }
+                    Log.Write(message);
+                    writeMessage(message);
+                }
+            });
     }
     }
 }

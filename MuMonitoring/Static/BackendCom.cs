@@ -1,5 +1,6 @@
 ﻿using MuMonitoring.DTOs;
 using MuMonitoring.Static;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -48,18 +49,42 @@ namespace MuMonitoring
             return resString;
         }
 
-        public static bool Authenticate(Credentials credentials)
+        public static async Task<dynamic> Authenticate(Credentials credentials)
         {
             JObject o = new JObject();
+            dynamic resObj = null;
+            try
+            {
+                o["username"] = credentials.username;
+                var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
+                string res = sendPost(BackendURL+m_Const_startSession, httpContent).Result;
+                resObj = JsonConvert.DeserializeObject(res);
+            
+                //if ((bool)resObj.success)
+                //{
+                    //Log.Write(res);
+                    //credentials.sessionKey = (string)resObj.data.SessionKey;
+                    //ClientConfigDTO config = new ClientConfigDTO(resObj.data.ClientConfig);
+                    //StateManager.Init(credentials, config);
+                    // continue to app show the key
+                    
 
-            o["username"] = credentials.username;
-            var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
-            //var response = await m_client.PostAsync(BackendURL, httpContent);
-            //var res = response.Result;
-            //var resString = response.Content.ReadAsStringAsync().Result;
-            string res = sendPost(BackendURL+m_Const_startSession, httpContent).Result;
-            Log.Write(res);
-            return true;
+                //}
+                //else
+                //{
+                //    // show error message
+                //    Log.Write("failed initializing session: " + (string)resObj.message);
+                //}
+                //{ "success":true,"message":"Successsfully initialized Session ID.","data":{ "ProcessName":"main.exe","rotationNotifyTimeMS":21600000,"pollingIntervalMS":"10000","SequentialBadBehaviourFrameSize":30} }
+
+            }catch(Exception exc)
+            {
+                Log.Write("Error occured when trying to authenticate \n "+exc.Message);
+                Log.Write(exc.StackTrace);
+            }
+
+
+            return resObj;
         }
     }
 }

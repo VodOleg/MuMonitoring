@@ -25,9 +25,24 @@ const UtilityFunctions = {
         
         return (UtilityFunctions.isDefined(item) && UtilityFunctions.isString(item) && item !== "" && item !== '')
     },
-
+    /**
+     * @description stop the execution flow to sleep @timoutMS milliseconds
+     * @returns void
+     */
     sleep: async (timeoutMS) =>{
         await new Promise(resolve => setTimeout(resolve, timeoutMS));
+    },
+
+    /**
+     * @description Generates a random number with the amount of digits requested
+     * @returns random number with @digitCount amount of digits
+     */
+    generateKey: (digitsCount) =>{
+        let key = "";
+        for(let i = 0; i < digitsCount; i++){
+            key += Math.floor(Math.random() * 10).toString();
+        }
+        return key;
     }
 
 }

@@ -57,13 +57,18 @@ class DB_ {
     }
 
     createUser(username){
+        // get random key
+        let sessionKey_ = UF.generateKey(6);
+        
         this.collection.insertOne({
             username:username,
+            sessionKey:sessionKey_,
             muclients:{
 
             }
         }
         )
+        return sessionKey_;
     }
 
     /** TODO: __________________ */

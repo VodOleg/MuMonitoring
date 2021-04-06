@@ -13,6 +13,7 @@ class MuMonitor_Be{
         console.log(this.clientsConfig);
     }
 
+
     async userAuth(username){
         //check if user already exist
         let userExist = await this.db.checkifUserExist(username);
@@ -26,12 +27,16 @@ class MuMonitor_Be{
             }
         }else{
             // create user document
-            this.db.createUser(username);
+            let sessionKey = this.db.createUser(username);
             // send the configurations create response data
+            let data_ = {
+                ClientConfig: this.clientsConfig.ClientsConfig,
+                SessionKey: sessionKey
+            }
             resObject = {
                 success:true,
                 message:"Successsfully initialized Session ID.",
-                data: {...this.clientsConfig.ClientsConfig}
+                data: data_
             }
         }
         return resObject;

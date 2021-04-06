@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MuMonitoring.DTOs
+{
+    public class ClientConfigDTO
+    {
+        public string ProcessName { get; set; }
+        public int rotationNotifyTimeMS { get; set; }
+        public int pollingIntervalMS { get; set; }
+        public int SequentialBadBehaviourFrameSize { get; set; }
+
+        public ClientConfigDTO() { }
+
+        public ClientConfigDTO(dynamic config) 
+        {
+            ProcessName = (string)config.ProcessName;
+            rotationNotifyTimeMS = (int)config.rotationNotifyTimeMS;
+            pollingIntervalMS = (int)config.pollingIntervalMS;
+            SequentialBadBehaviourFrameSize = (int)config.SequentialBadBehaviourFrameSize;
+        }
+    }
+}
