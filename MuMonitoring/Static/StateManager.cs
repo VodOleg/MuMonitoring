@@ -12,7 +12,7 @@ namespace MuMonitoring.Static
     {
         public static ClientConfigDTO m_config;
         public static Credentials m_creds;
-
+        public static readonly object monitoredProcessesMutex = new object();
         public static List<P_Process> monitored_processes = new List<P_Process>();
 
         public static void Init(Credentials creds, ClientConfigDTO config)

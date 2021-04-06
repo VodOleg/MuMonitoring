@@ -21,6 +21,9 @@ namespace MuMonitoring.Static
         {
             Process[] localAll = Process.GetProcessesByName(StateManager.m_config.ProcessName);
             
+            
+
+
             foreach (var process in localAll)
             {
                 bool isMonitored = false;
@@ -31,6 +34,24 @@ namespace MuMonitoring.Static
                         // this process already monitored skip
                         isMonitored = true;
                         break;
+                    }
+
+                    bool monitored_process_is_alive = false;
+                    // clear processes that are not exist anymore
+                    foreach(var process_ in localAll)
+                    {
+                        if (process_.Id == monitored_process.process.Id)
+                        {
+                            // process still alive
+                            monitored_process_is_alive = true;
+                            break;
+                        }
+                    }
+
+                    if (!monitored_process_is_alive)
+                    {
+                        // monitored process is dead, should remove it from list
+                        StateManager.monitored_processes.Remove(monitored_process);
                     }
                 }
                 

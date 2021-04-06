@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="MuMonitoring.ProcessControler"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MuMonitoring"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="460">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="26"></RowDefinition>
+            <RowDefinition Height="34"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Margin="10,0,0,0" x:Name="processTitle"></Label>
+        <Label Grid.Row="1" Margin="70,-5,0,0" x:Name="pidboxlabel">Process Alias :</Label>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <!--<ComboBox Name="comboBox" Height="25" Grid.Column="0" Width="300"></ComboBox>-->
+            <TextBox HorizontalAlignment="Center" Grid.Column="1" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            
+            <CheckBox Margin="0,0,0,0" Name="doInstall" Grid.Column="2" Width="100" Checked="DoInstall_Checked" Unchecked="DoInstall_Unchecked" IsChecked="True" >
+                <TextBlock Text="Monitor"></TextBlock>
+            </CheckBox>
+        </Grid>
+    </Grid>
+</UserControl>

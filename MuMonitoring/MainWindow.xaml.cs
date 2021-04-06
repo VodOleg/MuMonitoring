@@ -1,9 +1,12 @@
-﻿using MuMonitoring.Static;
+﻿using MuMonitoring.DTOs;
+using MuMonitoring.Static;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,34 +24,75 @@ namespace MuMonitoring
     /// </summary>
     public partial class MainWindow : Window
     {
+        public List<ProcessControler> m_monitoredProcessesUC;
         public ProcessMonitor m_pMonitor = null;
+        bool stopPeriodicFunction = false;
+
         public MainWindow()
         {
             InitializeComponent();
             CustomInit();
             Authentication.AddHandler(Authentication.ConnectedEvent, new RoutedEventHandler(ConnectedHandler));
             m_pMonitor = new ProcessMonitor();
+            m_monitoredProcessesUC = new List<ProcessControler>();
         }
 
         void ConnectedHandler(Object sender, RoutedEventArgs e)
         {
             e.Handled = true;
             Authentication.Visibility = Visibility.Hidden;
+            headingLabel.Text = "Monitoring the following processes:";
             startClient();
+        }
+
+        private void renderProcessUC()
+        {
+            this.Dispatcher.Invoke(() => {
+                mainContainer.Children.Clear();
+                ScrollViewer sv = new ScrollViewer();
+                StackPanel sp = new StackPanel();
+                sv.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+                foreach (var process in StateManager.monitored_processes)
+                {
+                    ProcessControler vs = new ProcessControler();
+                    vs.CustomInit(process);
+                    sp.Children.Add(vs);
+                    m_monitoredProcessesUC.Add(vs);
+                }
+                
+                sv.Content = sp;
+                mainContainer.Children.Add(sv);
+
+            });
+        }
+
+        private void refreshProcesses()
+        {
+            m_pMonitor.publishActiveProcesses(); // make periodic
+
+            // render the user controls
+            renderProcessUC();
+
+        }
+
+        private void periodicFunction()
+        {
+            while (!this.stopPeriodicFunction)
+            {
+                Thread.Sleep(5000);
+                this.refreshProcesses();
+            }
         }
 
         private void startClient()
         {
-            // try catch ? 
-            // start the program
-            m_pMonitor.publishActiveProcesses();
+            refreshProcesses();
 
-            // render the user controls
-            foreach (var process in StateManager.monitored_processes)
-            {
-                Log.Write("monitoring " + process.process.Id + " " + process.process.ProcessName);
-            }
+            Task.Factory.StartNew(() => periodicFunction());
+            
         }
+
 
         private void CustomInit()
         {
