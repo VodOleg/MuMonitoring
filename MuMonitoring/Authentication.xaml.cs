@@ -24,6 +24,18 @@ namespace MuMonitoring
     public partial class Authentication : UserControl
     {
         private HttpClient m_pClient;
+
+
+        public static readonly RoutedEvent ConnectedEvent = EventManager.RegisterRoutedEvent(
+            "Connected", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Authentication));
+
+        public event RoutedEventHandler Connected
+        {
+            add { AddHandler(Authentication.ConnectedEvent, value); }
+            remove { RemoveHandler(Authentication.ConnectedEvent, value); }
+        }
+
+
         public Authentication()
         {
             InitializeComponent();
@@ -49,6 +61,11 @@ namespace MuMonitoring
                     userID.sessionKey = (string)response.data.SessionKey;
                     ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
                     StateManager.Init(userID, config);
+                    Dispatcher.Invoke(() =>
+                    {
+                        RaiseEvent(new RoutedEventArgs(Authentication.ConnectedEvent, this));
+
+                    });
                 }
                 else
                 {

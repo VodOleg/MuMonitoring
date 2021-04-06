@@ -12,7 +12,7 @@ namespace MuMonitoring.DTOs
         public int rotationNotifyTimeMS { get; set; }
         public int pollingIntervalMS { get; set; }
         public int SequentialBadBehaviourFrameSize { get; set; }
-
+        public int AnalysisWindowSize { get; set; }
         public ClientConfigDTO() { }
 
         public ClientConfigDTO(dynamic config) 

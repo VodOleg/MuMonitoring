@@ -35,6 +35,7 @@
         <Grid Name="mainContainer"  Grid.Column="1" Grid.Row="1">
             <!--<local:awsClientCredentials x:Name="awsClientForm"></local:awsClientCredentials>-->
             <local:Authentication x:Name="Authentication"></local:Authentication>
+            
         </Grid>
 
 
