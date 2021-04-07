@@ -32,6 +32,14 @@ namespace MuMonitoring
             }
         }
 
+        public static void removeProcess(int processID)
+        {
+            lock (m_ProcessIDs)
+            {
+                m_ProcessIDs.Remove(processID);
+            }
+        }
+
         private static void StartEtwSession(CancellationToken cancelToken)
         {
             try

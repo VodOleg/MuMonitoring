@@ -42,6 +42,8 @@ namespace MuMonitoring.Static
                     if (!monitored_process_is_alive)
                     {
                         // monitored process is dead, should remove it from list
+                        ETWwrapper.removeProcess(monitored_process.process.Id);
+
                         StateManager.monitored_processes.Remove(monitored_process);
                     }
                 }
@@ -66,19 +68,36 @@ namespace MuMonitoring.Static
                     }
 
                     // this is a new process which we should add to the list to monitor
-                    //ETWwrapper.addProcess(process.Id); // TODO: should use one list
                     P_Process monitoredProcess = new P_Process();
                     monitoredProcess.process = process;
                     monitoredProcess.data_processor = new DataProcessor(process.Id);
                     StateManager.monitored_processes.Add(monitoredProcess);
+                    
+                    ETWwrapper.addProcess(process.Id); 
 
                     //sort the monitored processes according to their start time
                     StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
                 }
 
             }
+        }
 
+        public void analyzeData()
+        {
+            foreach (var process in StateManager.monitored_processes.ToList())
+                {
 
+                    SessionData somedata = ETWwrapper.getData(process.process.Id);
+                    process.data_processor.Append(somedata);
+                    StateManager.addData(process, somedata);
+                    //double milliseconds_passed_since_data = DateTime.Now.Subtract(somedata.timestamp).TotalMilliseconds;
+
+                }
+        }
+
+        public void run()
+        {
+            ETWwrapper.start();
         }
     }
 }

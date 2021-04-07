@@ -71,15 +71,16 @@ namespace MuMonitoring
 
         public void Append(SessionData data_)
         {
-            if (stopNotifying)
-                return;
+            //if (stopNotifying)
+            //    return;
 
             updateCounter++;
 
             if (data_.disconnected)
             {
                 //Notifier.Notify($"PID {this.processID} disconnected. ( {ConfigurationManager.AppSettings["SlackMention"]} )");
-                stopNotifying = true;
+                //stopNotifying = true;
+
             }
 
 
@@ -94,8 +95,12 @@ namespace MuMonitoring
             {
                 Console.WriteLine($"Notifying about process {this.processID}, bad statistics.");
                 suspiciousPacketCounter = 0;
+
                 // notify
-                stopNotifyingStatistics = true;
+
+                data_.suspicious = true;
+
+                //stopNotifyingStatistics = true;
                 //Notifier.Notify($"PID {this.processID} might have a problem (suspicious behavior). ( {ConfigurationManager.AppSettings["SlackMention"]} )");
             }
 

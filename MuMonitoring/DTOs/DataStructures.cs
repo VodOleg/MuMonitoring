@@ -15,5 +15,7 @@ namespace MuMonitoring.DTOs
     {
         public Process process { get; set; }
         public DataProcessor data_processor { get; set; }
+        public bool doMonitor { get; set; }
+        public string alias { get; set; } 
     }
 }

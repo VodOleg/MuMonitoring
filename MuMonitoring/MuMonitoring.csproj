@@ -82,8 +82,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DTOs\ClientConfigDTO.cs" />
+    <Compile Include="DTOs\ClientProcessDTO.cs" />
     <Compile Include="DTOs\DataStructures.cs" />
-    <Compile Include="DTOs\messageDTO.cs" />
+    <Compile Include="DTOs\dataMessageDTO.cs" />
     <Compile Include="DTOs\SessionData.cs" />
     <Compile Include="DTOs\startSessionDTO.cs" />
     <Compile Include="ProcessControler.xaml.cs">

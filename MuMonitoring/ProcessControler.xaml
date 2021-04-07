@@ -21,7 +21,7 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <!--<ComboBox Name="comboBox" Height="25" Grid.Column="0" Width="300"></ComboBox>-->
-            <TextBox HorizontalAlignment="Center" Grid.Column="1" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="txtAlias" HorizontalAlignment="Center" Grid.Column="1" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
             
             <CheckBox Margin="0,0,0,0" Name="doInstall" Grid.Column="2" Width="100" Checked="DoInstall_Checked" Unchecked="DoInstall_Unchecked" IsChecked="True" >
                 <TextBlock Text="Monitor"></TextBlock>

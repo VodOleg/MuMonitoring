@@ -2,7 +2,9 @@ const { response } = require('express');
 const express = require('express')
 const router = express.Router();
 const MuMonitorBE = require('../BEService/BE_Service');
+const fs = require('fs');
 
+var GlobalOutput = fs.createWriteStream("./Summary.log", {flags:'a'});
 // generic error response json
 const errorResponse = {
     success: false,
@@ -37,8 +39,12 @@ router.post('/StartSession',async (req,res)=>{
 
 // @desc Login/Landing page
 // @route GET /
-router.get('/dashboard', (req,res)=>{
-    res.render('dashboard')
+router.post('/UpdateSession', (req,res)=>{
+    //console.log("received updatesession");
+    //console.log(req.body);
+    GlobalOutput.write(JSON.stringify(req.body));
+    GlobalOutput.write('\n\r');
+    res.send('ok');
 })
 
 module.exports = router;

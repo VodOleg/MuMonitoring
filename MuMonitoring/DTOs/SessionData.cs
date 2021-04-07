@@ -15,20 +15,22 @@ namespace MuMonitoring
             cpuUsage = 0;
             timestamp = DateTime.Now;
             disconnected = false;
+            suspicious = false;
         }
         public int sent { get; set; }
         public int received { get; set; }
         public DateTime timestamp { get; set; }
-
+        
         public double cpuUsage { get; set; }
         public bool disconnected { get; set; }
-
+        public bool suspicious { get; set; }
         public void hardCopy(SessionData other)
         {
             this.sent = other.sent;
             this.received = other.received;
             this.cpuUsage = other.cpuUsage;
             this.timestamp = other.timestamp;
+            
         }
 
     }

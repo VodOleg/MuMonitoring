@@ -13,6 +13,8 @@ namespace MuMonitoring.DTOs
         public int pollingIntervalMS { get; set; }
         public int SequentialBadBehaviourFrameSize { get; set; }
         public int AnalysisWindowSize { get; set; }
+        public int ClientRefreshTimeSec { get; set; }
+        public int KeepAliveTimeSec { get; set; }
         public ClientConfigDTO() { }
 
         public ClientConfigDTO(dynamic config) 
@@ -21,6 +23,9 @@ namespace MuMonitoring.DTOs
             rotationNotifyTimeMS = (int)config.rotationNotifyTimeMS;
             pollingIntervalMS = (int)config.pollingIntervalMS;
             SequentialBadBehaviourFrameSize = (int)config.SequentialBadBehaviourFrameSize;
+            AnalysisWindowSize = (int)config.AnalysisWindowSize;
+            ClientRefreshTimeSec = (int)config.ClientRefreshTimeSec;
+            KeepAliveTimeSec = (int)config.KeepAliveTimeSec;
         }
     }
 }

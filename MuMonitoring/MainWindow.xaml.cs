@@ -28,7 +28,9 @@ namespace MuMonitoring
         public List<ProcessControler> m_monitoredProcessesUC;
         public ProcessMonitor m_pMonitor = null;
         bool stopPeriodicFunction = false;
-        public BackgroundWorker bw; 
+        public BackgroundWorker bw_refreshThread; 
+        public BackgroundWorker bw_dataAnalyzer;
+        public BackgroundWorker bw_BE_reporter;
         public MainWindow()
         {
             InitializeComponent();
@@ -80,12 +82,33 @@ namespace MuMonitoring
 
         }
 
-        private void periodicFunction(object sender, DoWorkEventArgs e)
+        private void periodicUIRefresherHandle(object sender, DoWorkEventArgs e)
         {
+            Log.Write("starting UI refresh thread");
             while (!this.stopPeriodicFunction)
             {
-                Thread.Sleep(5000);
+                Thread.Sleep(StateManager.m_config.ClientRefreshTimeSec * 1000);
                 this.refreshProcesses();
+            }
+        }
+
+        private void periodicDataExtraction (object sender, DoWorkEventArgs e)
+        {
+            Log.Write("starting data extraction thread");
+            while (!this.stopPeriodicFunction)
+            {
+                m_pMonitor.analyzeData();
+                Thread.Sleep(StateManager.m_config.pollingIntervalMS);
+            }
+        }
+
+        private void periodicKeepAlive(object sender, DoWorkEventArgs e)
+        {
+            Log.Write("starting keep alive thread");
+            while (!this.stopPeriodicFunction)
+            {
+                Thread.Sleep(StateManager.m_config.KeepAliveTimeSec * 1000);
+                BackendCom.sendDataToBE();
             }
         }
 
@@ -93,11 +116,21 @@ namespace MuMonitoring
         {
             refreshProcesses();
 
-            bw = new BackgroundWorker();
-            bw.DoWork += this.periodicFunction;
-            bw.RunWorkerAsync();
-            //Task.Factory.StartNew(() => periodicFunction());
-            
+            bw_refreshThread = new BackgroundWorker();
+            bw_refreshThread.DoWork += this.periodicUIRefresherHandle;
+            bw_refreshThread.RunWorkerAsync();
+            //bw_refreshThread = Utils.startBWThread(this.periodicUIRefresherHandle);
+            m_pMonitor.run();
+
+            bw_dataAnalyzer = new BackgroundWorker();
+            bw_dataAnalyzer.DoWork += this.periodicDataExtraction;
+            bw_dataAnalyzer.RunWorkerAsync();
+            //bw_dataAnalyzer = Utils.startBWThread(this.periodicDataExtraction);
+
+            bw_BE_reporter = new BackgroundWorker();
+            bw_BE_reporter.DoWork += this.periodicKeepAlive;
+            bw_BE_reporter.RunWorkerAsync();
+            //bw_BE_reporter = Utils.startBWThread(this.periodicKeepAlive);
         }
 
 

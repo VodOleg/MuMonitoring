@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace MuMonitoring.DTOs
 {
-    class messageDTO
+    public class dataMessageDTO
     {
+        public Credentials creds { get; set; }
+        public List<ClientProcessDTO> clients { get; set; }
     }
 }

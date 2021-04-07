@@ -33,7 +33,15 @@ namespace MuMonitoring
         {
             this.p_process = process;
             processTitle.Content = $"{process.process.ProcessName} ({process.process.Id})";
-
+            
+            if (p_process!=null && !String.IsNullOrEmpty(p_process.alias))
+            {
+                txtAlias.Text = process.alias;
+            }
+            else
+            {
+                txtAlias.Text = process.process.Id.ToString();
+            }
         }
 
         public int getProcessID()
@@ -50,12 +58,23 @@ namespace MuMonitoring
 
         private void DoInstall_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
+            
+            if (p_process!=null)
+                p_process.doMonitor = true;
             this.monitor = true;
         }
 
         private void DoInstall_Unchecked(object sender, System.Windows.RoutedEventArgs e)
         {
+            if (p_process!=null)
+                p_process.doMonitor = false;
             this.monitor = false;
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (p_process!=null)
+                p_process.alias = txtAlias.Text;
         }
     }
 }

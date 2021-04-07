@@ -1,4 +1,5 @@
 ﻿using MuMonitoring.DTOs;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace MuMonitoring.Static
         public static Credentials m_creds;
         public static readonly object monitoredProcessesMutex = new object();
         public static List<P_Process> monitored_processes = new List<P_Process>();
+        public static List<ClientProcessDTO> data_to_send = new List<ClientProcessDTO>();
 
         public static void Init(Credentials creds, ClientConfigDTO config)
         {
@@ -22,11 +24,31 @@ namespace MuMonitoring.Static
             m_config = config;
         }
 
-        public static string getProcessName()
+        public static void addData(P_Process process, SessionData data)
         {
-            return m_config.ProcessName;
+            ClientProcessDTO newData = new ClientProcessDTO()
+            {
+                processID = process.process.Id,
+                alias = process.alias,
+                disconnected = data.disconnected,
+                suspicious = data.suspicious,
+                timestamp = data.timestamp
+            };
+
+            lock (data_to_send)
+            {
+                if (!data_to_send.Contains(newData))
+                {
+                    data_to_send.Add(newData);
+                }
+            }
         }
 
-        
+        public static List<ClientProcessDTO> getData()
+        {
+            List<ClientProcessDTO> toSend = data_to_send.ToList();
+            data_to_send.Clear();
+            return toSend;
+        }
     }
 }
