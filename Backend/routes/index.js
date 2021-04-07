@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router();
 const MuMonitorBE = require('../BEService/BE_Service');
 const fs = require('fs');
+const UtilityFunctions = require('../BEService/Utils');
 
 var GlobalOutput = fs.createWriteStream("./Summary.log", {flags:'a'});
 // generic error response json
@@ -27,7 +28,6 @@ router.post('/StartSession',async (req,res)=>{
     try{
         console.log(req.body);
         let response = await MuMonitorBE.userAuth(req.body.username);
-        console.log(response);
         res.status(200).json(response);
     }catch(exc){
         console.error("Exception occured when trying to connect:");
@@ -40,10 +40,9 @@ router.post('/StartSession',async (req,res)=>{
 // @desc Login/Landing page
 // @route GET /
 router.post('/UpdateSession', (req,res)=>{
-    //console.log("received updatesession");
-    //console.log(req.body);
-    GlobalOutput.write(JSON.stringify(req.body));
-    GlobalOutput.write('\n\r');
+    if (UtilityFunctions.isDefined(req.body)){
+        MuMonitorBE.updateSession(req.body);
+    }
     res.send('ok');
 })
 

@@ -5,14 +5,33 @@ class MuMonitor_Be{
         this.db = db_;
         this.clientsConfig = null;
         this.customInit();
+        this.periodicHandle;
+        this.watchDogTimerSec = 60;
     }
 
     async customInit(){
         // get the configuration to populate to clients from the db
         this.clientsConfig = await this.db.getClientConfiguration();
-        console.log(this.clientsConfig);
+        this.periodicHandle = setInterval(() => {
+            this.periodicTasks();
+        }, this.watchDogTimerSec* 1000);
     }
 
+    periodicTasks(){
+        //watch dog
+
+        this.db.removeDeadSessions(this.watchDogTimerSec);
+    }
+
+    updateSession(session){
+        try{
+            let creds = session.creds;
+            let muclients = session.clients;
+            this.db.updateSession(creds,muclients);
+        }catch(exc){
+            console.log(`Exception occured when updating session\n ${exc}`);
+        }
+    }
 
     async userAuth(username){
         //check if user already exist

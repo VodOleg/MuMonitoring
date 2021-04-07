@@ -72,16 +72,39 @@ class DB_ {
     }
 
     /** TODO: __________________ */
+            //get all sessions from db and remove sessions that werent update in the past watchDogTimerSec
+    async removeDeadSessions(timeoutSeconds){
+        let sessions = await this.collection.find({}).toArray();
+        //console.log(sessions);
+        //remove sessions with 0 clients
+        let curretTime = Date.now();
+        let timeoutMS = timeoutSeconds*1000;
 
-    removeUser(username){
-        // from DB, i don't want to store unactive users
-        // users will be added to the db on activity
+        sessions.forEach(session => {
+            let shouldDelete = !UF.isDefined(session.lastupdated);
+            shouldDelete |= !UF.isDefined(session.muclients);
+            shouldDelete |= Object.entries(session.muclients).length === 0;
+            shouldDelete |= session.muclients.length === 0;
+            let timePassedSinceLastUpdate = curretTime-session.lastupdated;
+            shouldDelete |= (UF.isDefined(session.lastupdated) && timePassedSinceLastUpdate > (timeoutSeconds*1000 )  );
+            if (shouldDelete){
+                console.log(`deleting ${session.username}`)
+                this.collection.deleteOne({_id: new mongodb.ObjectID(session._id)});
+            }else{
+                console.log(`failed to delete ${session.username} timePassed = ${timePassedSinceLastUpdate}`)
+            }
+        });
     }
 
-    updateUser(username, obj){
+    updateSession(creds, clients){
         // update with new mu clients
         // update clients in different func? 
         // when updating reset the watch dog counter    
+        let query = { username: creds.username, sessionKey: creds.sessionKey };
+        let newvalues = { $set: { muclients: clients, lastupdated: Date.now() } };
+        this.collection.updateOne(query, newvalues);
+
+        //dbo.collection("customers").updateOne(myquery, newvalues, function(err, res) {
     }
 
     
