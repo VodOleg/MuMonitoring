@@ -1,11 +1,10 @@
 const { response } = require('express');
 const express = require('express')
-const router = express.Router();
+const FE_router = express.Router();
 const MuMonitorBE = require('../BEService/BE_Service');
 const fs = require('fs');
 const UtilityFunctions = require('../BEService/Utils');
-
-var GlobalOutput = fs.createWriteStream("./Summary.log", {flags:'a'});
+const path = require('path');
 // generic error response json
 const errorResponse = {
     success: false,
@@ -16,35 +15,15 @@ const errorResponse = {
 
 // @desc Login/Landing page
 // @route GET /
-router.get('/', (req,res)=>{
-    console.log(req);
-    res.send("OK");
+FE_router.get('/', (req,res)=>{
+    console.log("trying to get")
+    res.sendFile(path.join(__dirname, "mu-monitor-frontend/public", "index.html"));
+      
 })
 
-// @desc Login/Landing page
-// @route POST /
-router.post('/StartSession',async (req,res)=>{
-    // TODO: protect from DOS attack? 
-    try{
-        console.log(req.body);
-        let response = await MuMonitorBE.userAuth(req.body.username);
-        res.status(200).json(response);
-    }catch(exc){
-        console.error("Exception occured when trying to connect:");
-        console.error(response);
-        res.status(500).json(errorResponse)
-
-    }
+FE_router.post('/login', (req,res)=>{
+    console.log(`${JSON.stringify(req.body)} trying to login`);
+    res.json({res:"OK"})
 })
 
-// @desc Login/Landing page
-// @route GET /
-router.post('/UpdateSession', (req,res)=>{
-    // TODO: protect from DOS attack ?
-    if (UtilityFunctions.isDefined(req.body)){
-        MuMonitorBE.updateSession(req.body);
-    }
-    res.send('ok');
-})
-
-module.exports = router;
+module.exports = FE_router;

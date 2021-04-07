@@ -5,7 +5,6 @@ const MuMonitorBE = require('../BEService/BE_Service');
 const fs = require('fs');
 const UtilityFunctions = require('../BEService/Utils');
 
-var GlobalOutput = fs.createWriteStream("./Summary.log", {flags:'a'});
 // generic error response json
 const errorResponse = {
     success: false,

@@ -16,7 +16,7 @@ if( process.env.NODE_ENV === 'development'){
 }
 
 // Static folder
-fe_app.use(express.static(path.join(__dirname, 'public')));
+fe_app.use(express.static(path.join(__dirname, '/mu-monitor-frontend/build')));
 
 // Apply bodyparser
 app.use(express.json());
@@ -33,6 +33,6 @@ app.listen(PORT,
      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
      );
      
-app.listen(FE_PORT,
+fe_app.listen(FE_PORT,
     console.log(`Frontend Server running in ${process.env.NODE_ENV} mode on port ${FE_PORT}`)
 );
