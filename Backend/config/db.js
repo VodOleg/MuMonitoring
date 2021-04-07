@@ -71,8 +71,7 @@ class DB_ {
         return sessionKey_;
     }
 
-    /** TODO: __________________ */
-            //get all sessions from db and remove sessions that werent update in the past watchDogTimerSec
+    //get all sessions from db and remove sessions that werent update in the past watchDogTimerSec
     async removeDeadSessions(timeoutSeconds){
         let sessions = await this.collection.find({}).toArray();
         //console.log(sessions);

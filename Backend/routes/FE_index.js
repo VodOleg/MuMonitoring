@@ -13,6 +13,14 @@ const errorResponse = {
     data: null
 }
 
+
+// @desc Login/Landing page
+// @route GET /
+router.get('/', (req,res)=>{
+    console.log(req);
+    res.send("OK");
+})
+
 // @desc Login/Landing page
 // @route POST /
 router.post('/StartSession',async (req,res)=>{
