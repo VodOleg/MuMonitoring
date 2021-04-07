@@ -5,6 +5,8 @@ const MuMonitorBE = require('../BEService/BE_Service');
 const fs = require('fs');
 const UtilityFunctions = require('../BEService/Utils');
 const path = require('path');
+const BE = require('../BEService/BE_Service');
+
 // generic error response json
 const errorResponse = {
     success: false,
@@ -12,18 +14,25 @@ const errorResponse = {
     data: null
 }
 
-
 // @desc Login/Landing page
 // @route GET /
 FE_router.get('/', (req,res)=>{
     console.log("trying to get")
-    res.sendFile(path.join(__dirname, "mu-monitor-frontend/public", "index.html"));
+    res.sendFile(path.join(__dirname, "./../../mu-monitor-frontend/public", "index.html"));
       
 })
 
 FE_router.post('/login', (req,res)=>{
     console.log(`${JSON.stringify(req.body)} trying to login`);
-    res.json({res:"OK"})
+    if (UtilityFunctions.isDefined(req.body) && UtilityFunctions.isDefined(req.body.SessionName) && UtilityFunctions.isDefined(req.body.SessionKey)){
+        BE.loginWeb(req.body.SessionName, req.body.SessionKey).then((success)=>{
+            let bodyresponse = {response:UtilityFunctions.isDefined(success) ? true : false , payload:success};
+            console.log(bodyresponse);
+            res.status(200).json(bodyresponse);
+        })
+    }else{
+        res.status(401).json({response:false});
+    }
 })
 
 module.exports = FE_router;

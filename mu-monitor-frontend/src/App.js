@@ -10,7 +10,8 @@ class App extends Component {
     this.state = {
       SessionName:"",
       SessionKey:"",
-      loggedIn: false
+      loggedIn: false,
+      clients: []
     }
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
@@ -28,7 +29,11 @@ class App extends Component {
 
   go_login(e){
     BE.tryLogIn(this.state.SessionName, this.state.SessionKey).then((res)=>{
-      console.log("APP: " + JSON.stringify(res) );
+      console.log("APP: logged in" + JSON.stringify(res) );
+      if (res.authenticated)
+        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients });
+      else
+        this.setState({loggedIn:res.authenticated});
     });    
   }
 
@@ -59,6 +64,12 @@ class App extends Component {
     </Wrap>;
     return ele;
 }
+renderData(){
+  let ele = <Wrap>
+    {JSON.stringify(this.state.clients)}  
+  </Wrap>;
+  return ele;
+}
 
   render() {
     return (
@@ -75,7 +86,7 @@ class App extends Component {
       </div>
       :
       <div>
-        displaying data here
+        {this.renderData()}        
       </div>  
     }
     </div>

@@ -16,7 +16,7 @@ if( process.env.NODE_ENV === 'development'){
 }
 
 // Static folder
-fe_app.use(express.static(path.join(__dirname, '/mu-monitor-frontend/build')));
+fe_app.use(express.static(path.join(__dirname, './../mu-monitor-frontend/build')));
 
 // Apply bodyparser
 app.use(express.json());

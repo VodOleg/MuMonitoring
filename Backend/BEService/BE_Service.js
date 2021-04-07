@@ -1,4 +1,5 @@
 const db_ = require('../config/db');
+const UtilityFunctions = require('./Utils');
 
 class MuMonitor_Be{
     constructor(){
@@ -38,6 +39,16 @@ class MuMonitor_Be{
             console.log(`Exception occured when updating session\n ${exc}`);
         }
     }
+    
+    async loginWeb(SessionName, SessionKey){
+        let session = await this.db.getSession(SessionName,SessionKey);
+        let ret = null;
+        if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.muclients)){
+            ret = session;
+        }
+        return ret;
+    }
+    
 
     async userAuth(username){
         //check if user already exist

@@ -2,6 +2,7 @@
 // using axios
 
 import axios from 'axios';
+import {UtilityFunctions as UF, UtilityFunctions} from './Utils';
 
 class BE_Comm{
     constructor(){
@@ -19,7 +20,7 @@ class BE_Comm{
     async tryLogIn(SessionName, SessionKey){
         let user = {
             authenticated:false,
-            data:{}
+            payload:null
         }
         
         let body={
@@ -27,39 +28,15 @@ class BE_Comm{
             'SessionKey':SessionKey
         }
         let res = await this.send_request('/login',body);
-        // if(UF.isDefined(res) && UF.isDefined(res.data)){
-        //     // user.authenticated = res.data.response === "True";
-        //     // user.data = res.data.data;
-        //     console.log(res);
-        // }
-        
-
-        return res;
-    }
-
-    async tryRegister(email,pw){
-        
-        let body={
-            'email':email,
-            'pw':pw
-        }
-        let res = await this.send_request('Seller/Register',body);
-        
-        let user = {
-            authenticated:false,
-            data:{}
-        }
-        // if(UF.isDefined(res) && UF.isDefined(res.data.response)){
-        //     user.authenticated = res.data.response === "True";
-        //     user.data = res.data.data;
-        // }
+        user.authenticated = this.processResponse(res);
+        user.payload = res.data.payload;
         return user;
-
     }
 
-    // processResponse(res){
-    //     return UF.isDefined(res) && UF.isDefined(res.data.response) && res.data.response==="True";
-    // }
+
+    processResponse(res){
+        return UF.isDefined(res) && UF.isDefined(res.data.response) && res.data.response===true;
+    }
 
 
     async send_request(controller, body, type='post'){
