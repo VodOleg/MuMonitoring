@@ -2,6 +2,7 @@
 using MuMonitoring.Static;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -27,7 +28,7 @@ namespace MuMonitoring
         public List<ProcessControler> m_monitoredProcessesUC;
         public ProcessMonitor m_pMonitor = null;
         bool stopPeriodicFunction = false;
-
+        public BackgroundWorker bw; 
         public MainWindow()
         {
             InitializeComponent();
@@ -53,12 +54,15 @@ namespace MuMonitoring
                 StackPanel sp = new StackPanel();
                 sv.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
 
-                foreach (var process in StateManager.monitored_processes)
+                lock (StateManager.monitoredProcessesMutex)
                 {
-                    ProcessControler vs = new ProcessControler();
-                    vs.CustomInit(process);
-                    sp.Children.Add(vs);
-                    m_monitoredProcessesUC.Add(vs);
+                    foreach (var process in StateManager.monitored_processes)
+                    {
+                        ProcessControler vs = new ProcessControler();
+                        vs.CustomInit(process);
+                        sp.Children.Add(vs);
+                        m_monitoredProcessesUC.Add(vs);
+                    }
                 }
                 
                 sv.Content = sp;
@@ -76,7 +80,7 @@ namespace MuMonitoring
 
         }
 
-        private void periodicFunction()
+        private void periodicFunction(object sender, DoWorkEventArgs e)
         {
             while (!this.stopPeriodicFunction)
             {
@@ -89,7 +93,10 @@ namespace MuMonitoring
         {
             refreshProcesses();
 
-            Task.Factory.StartNew(() => periodicFunction());
+            bw = new BackgroundWorker();
+            bw.DoWork += this.periodicFunction;
+            bw.RunWorkerAsync();
+            //Task.Factory.StartNew(() => periodicFunction());
             
         }
 
