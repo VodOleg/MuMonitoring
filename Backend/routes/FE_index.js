@@ -23,11 +23,21 @@ FE_router.get('/', (req,res)=>{
 })
 
 FE_router.post('/login', (req,res)=>{
-    console.log(`${JSON.stringify(req.body)} trying to login`);
     if (UtilityFunctions.isDefined(req.body) && UtilityFunctions.isDefined(req.body.SessionName) && UtilityFunctions.isDefined(req.body.SessionKey)){
-        BE.loginWeb(req.body.SessionName, req.body.SessionKey).then((success)=>{
+        BE.getSessions(req.body.SessionName, req.body.SessionKey).then((success)=>{
             let bodyresponse = {response:UtilityFunctions.isDefined(success) ? true : false , payload:success};
-            console.log(bodyresponse);
+            res.status(200).json(bodyresponse);
+        })
+    }else{
+        res.status(401).json({response:false});
+    }
+})
+
+
+FE_router.post('/getSessions', (req,res)=>{
+    if (UtilityFunctions.isDefined(req.body) && UtilityFunctions.isDefined(req.body.SessionName) && UtilityFunctions.isDefined(req.body.SessionKey)){
+        BE.getSessions(req.body.SessionName, req.body.SessionKey).then((success)=>{
+            let bodyresponse = {response:UtilityFunctions.isDefined(success) ? true : false , payload:success.muclients};
             res.status(200).json(bodyresponse);
         })
     }else{

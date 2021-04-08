@@ -1,8 +1,9 @@
 import './App.css';
 import React, { Component } from 'react';
 import Wrap from './Common/Wrap';
-import {Form, Button} from 'react-bootstrap';
+import {Form, Button, Alert} from 'react-bootstrap';
 import BE from './Common/comm';
+import {UtilityFunctions as UF} from './Common/Utils';
 
 class App extends Component {
   constructor(props){
@@ -11,13 +12,27 @@ class App extends Component {
       SessionName:"",
       SessionKey:"",
       loggedIn: false,
+      invalidSessionCredentials:false,
       clients: []
     }
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
+
+    this.periodicHandle = setInterval(() => {
+      this.fetchData();
+    }, 5000);
   }
   componentDidMount(){
     document.title = "MU Monitor";
+  }
+
+  fetchData(){
+    if (this.state.loggedIn){
+      BE.getSessions(this.state.SessionName, this.state.SessionKey).then((sessions)=>{
+        //update state
+        this.setState({clients:sessions})
+      })
+    }
   }
 
   SessionNameChanged(item){
@@ -29,11 +44,10 @@ class App extends Component {
 
   go_login(e){
     BE.tryLogIn(this.state.SessionName, this.state.SessionKey).then((res)=>{
-      console.log("APP: logged in" + JSON.stringify(res) );
       if (res.authenticated)
-        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients });
+        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients, invalidSessionCredentials:true });
       else
-        this.setState({loggedIn:res.authenticated});
+        this.setState({loggedIn:res.authenticated,invalidSessionCredentials:true});
     });    
   }
 
@@ -64,10 +78,27 @@ class App extends Component {
     </Wrap>;
     return ele;
 }
+
 renderData(){
+  let uiClients = []
+  this.state.clients.forEach(client => {
+    let key_= "ui_item_of_"+client.processID;
+    uiClients.push(
+      <ProcessUI data={client} key={key_} name={key_}/>     
+    )
+  });
+
   let ele = <Wrap>
-    {JSON.stringify(this.state.clients)}  
+    <div className="client-cards-div">
+      {uiClients}  
+    </div>
   </Wrap>;
+  return ele;
+}
+renderFailureMessage(){
+  let ele = <Wrap>
+    <h6 style={{color:"red"}}>Invalid session credentials or the session does not exist.</h6>
+  </Wrap>
   return ele;
 }
 
@@ -83,10 +114,14 @@ renderData(){
       {!this.state.loggedIn ? 
       <div className="loginForm">
         {this.renderLoginDiv()}
+        {
+          this.state.invalidSessionCredentials ? 
+          this.renderFailureMessage(): null
+        }
       </div>
       :
       <div>
-        {this.renderData()}        
+        {this.renderData()}       
       </div>  
     }
     </div>
@@ -95,5 +130,44 @@ renderData(){
 }
     
 }
+
+class ProcessUI extends Component {
+  
+    render(){
+    let state = {
+        processID: UF.isDefined(this.props.data) ? this.props.data.processID : 0,
+        alias: UF.isDefined(this.props.data) ? this.props.data.alias : "",
+        disconnected: UF.isDefined(this.props.data) ? this.props.data.disconnected : false,
+        suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicios : false,
+        timestamp: UF.isDefined(this.props.data) ? this.props.data.timestamp : 0
+    }
+      let variant = "success";
+      let message = "Seems fine.";
+      if (state.disconnected){
+        variant="danger";
+        message = "This process was disconnected.";
+      }
+      else if (state.suspicious){
+        variant="warning";
+        message= "This process had suspiciously low activity";
+      }
+
+      let ele = <Wrap>
+        <Alert variant={variant}>
+        <Alert.Heading>{state.alias} ({state.processID})  </Alert.Heading>
+        <p>
+          {message}
+        </p>
+        <hr />
+        <p className="mb-0">
+          Timestamp: {state.timestamp}
+        </p>
+      </Alert>
+      </Wrap>;
+      return ele;
+    }
+  
+}
+
 
 export default App;

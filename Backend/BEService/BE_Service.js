@@ -40,7 +40,7 @@ class MuMonitor_Be{
         }
     }
     
-    async loginWeb(SessionName, SessionKey){
+    async getSessions(SessionName, SessionKey){
         let session = await this.db.getSession(SessionName,SessionKey);
         let ret = null;
         if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.muclients)){

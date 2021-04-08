@@ -10,13 +10,6 @@ class BE_Comm{
         this.axios = require('axios').default;
     }
 
-    async test(){
-        let res1 = await this.send_request("SellabelItem",null);
-        console.log(res1);
-        let res2 = await this.send_request("SellabelItem/test",{test:{JobId:"asd"}});
-        console.log(res2.data);
-    }
-
     async tryLogIn(SessionName, SessionKey){
         let user = {
             authenticated:false,
@@ -32,7 +25,19 @@ class BE_Comm{
         user.payload = res.data.payload;
         return user;
     }
-
+    
+    async getSessions(SessionName, SessionKey){
+        let body={
+            'SessionName':SessionName,
+            'SessionKey':SessionKey
+        }
+        let sessions = [];
+        let res = await this.send_request('/getSessions',body);
+        if (this.processResponse(res)){
+            sessions = res.data.payload;
+        }
+        return sessions;
+    }
 
     processResponse(res){
         return UF.isDefined(res) && UF.isDefined(res.data.response) && res.data.response===true;

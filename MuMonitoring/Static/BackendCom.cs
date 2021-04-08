@@ -44,12 +44,6 @@ namespace MuMonitoring
             return true;
         }
 
-        private static string BuildMessage(string type, string message)
-        {
-            
-            return "";
-        }
-
         private static async Task<string> sendPost(string url_, StringContent content)
         {
             var res = m_client.PostAsync(url_, content).Result;
