@@ -89,9 +89,9 @@ namespace MuMonitoring.Static
                 {
 
                     SessionData somedata = ETWwrapper.getData(process.process.Id);
+                    process.data_processor.Append(somedata);
                     process.disconnected = somedata.disconnected;
                     process.suspicious = somedata.suspicious;
-                    process.data_processor.Append(somedata);
                     StateManager.addData(process, somedata);
                     //double milliseconds_passed_since_data = DateTime.Now.Subtract(somedata.timestamp).TotalMilliseconds;
 

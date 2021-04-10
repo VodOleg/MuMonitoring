@@ -30,8 +30,14 @@ namespace MuMonitoring
             this.received = other.received;
             this.cpuUsage = other.cpuUsage;
             this.timestamp = other.timestamp;
-            
+            this.disconnected = other.disconnected;
+            this.suspicious = other.suspicious;
         }
 
+        public override string ToString()
+        {
+            string dat = $"SessionData: received={this.received}, dc={disconnected} suspicious={suspicious}, timestamp={timestamp.ToString()}";
+            return dat;
+        }
     }
 }

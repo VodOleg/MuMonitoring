@@ -39,6 +39,7 @@ namespace MuMonitoring.Static
             {
                 if (!data_to_send.Contains(newData) && process.doMonitor)
                 {
+                    //Log.Write($"add: {data}");
                     data_to_send.Add(newData);
                 }
             }

@@ -55,7 +55,7 @@ namespace MuMonitoring
                         if (cancelToken.IsCancellationRequested)
                         {
                             // stop the monitor
-                            Console.WriteLine("canceled rec");
+                            //Console.WriteLine("canceled rec");
                             return;
                         }
                         if (m_ProcessIDs.ContainsKey(data.ProcessID))
@@ -66,10 +66,6 @@ namespace MuMonitoring
                                 m_ProcessIDs[data.ProcessID].received = data.size;
                                 m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
                             }
-
-                        }
-                        else
-                        {
 
                         }
                     };

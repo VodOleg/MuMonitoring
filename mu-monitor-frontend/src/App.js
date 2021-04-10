@@ -87,13 +87,18 @@ renderData(){
       <ProcessUI data={client} key={key_} name={key_}/>     
     )
   });
+  if (this.state.clients.length === 0){
+    uiClients.push(
+      <h6 key="noprocesses message">No Processes to present.</h6>
+    )
+  }
 
   let ele = <Wrap>
     <div className="client-cards-div">
       {uiClients}  
     </div>
   </Wrap>;
-  
+
   return ele;
 }
 renderFailureMessage(){
@@ -121,7 +126,7 @@ renderFailureMessage(){
         }
       </div>
       :
-      <div>
+      <div className="dataWrapper">
         {this.renderData()}       
       </div>  
     }
@@ -135,13 +140,14 @@ renderFailureMessage(){
 class ProcessUI extends Component {
   
     render(){
-    let state = {
+      let state = {
         processID: UF.isDefined(this.props.data) ? this.props.data.processID : 0,
         alias: UF.isDefined(this.props.data) ? this.props.data.alias : "",
         disconnected: UF.isDefined(this.props.data) ? this.props.data.disconnected : false,
-        suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicios : false,
+        suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicious : false,
         timestamp: UF.isDefined(this.props.data) ? this.props.data.timestamp : 0
-    }
+      }
+
       let variant = "success";
       let message = "Seems fine.";
       if (state.disconnected){
