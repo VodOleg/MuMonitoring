@@ -37,7 +37,7 @@ namespace MuMonitoring.Static
 
             lock (data_to_send)
             {
-                if (!data_to_send.Contains(newData))
+                if (!data_to_send.Contains(newData) && process.doMonitor)
                 {
                     data_to_send.Add(newData);
                 }

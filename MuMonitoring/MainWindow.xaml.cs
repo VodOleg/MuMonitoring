@@ -45,6 +45,11 @@ namespace MuMonitoring
             e.Handled = true;
             Authentication.Visibility = Visibility.Hidden;
             headingLabel.Text = "Monitoring the following processes:";
+            label_sessionN.Visibility = Visibility.Visible;
+            label_sessionK.Visibility = Visibility.Visible;
+            label_SessionName.Content = StateManager.m_creds.username;
+            label_SessionKey.Content = StateManager.m_creds.sessionKey;
+            
             startClient();
         }
 

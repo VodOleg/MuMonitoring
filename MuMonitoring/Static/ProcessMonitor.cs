@@ -69,6 +69,7 @@ namespace MuMonitoring.Static
 
                     // this is a new process which we should add to the list to monitor
                     P_Process monitoredProcess = new P_Process();
+                    monitoredProcess.doMonitor = true;
                     monitoredProcess.process = process;
                     monitoredProcess.data_processor = new DataProcessor(process.Id);
                     StateManager.monitored_processes.Add(monitoredProcess);
@@ -88,6 +89,8 @@ namespace MuMonitoring.Static
                 {
 
                     SessionData somedata = ETWwrapper.getData(process.process.Id);
+                    process.disconnected = somedata.disconnected;
+                    process.suspicious = somedata.suspicious;
                     process.data_processor.Append(somedata);
                     StateManager.addData(process, somedata);
                     //double milliseconds_passed_since_data = DateTime.Now.Subtract(somedata.timestamp).TotalMilliseconds;

@@ -17,5 +17,7 @@ namespace MuMonitoring.DTOs
         public DataProcessor data_processor { get; set; }
         public bool doMonitor { get; set; }
         public string alias { get; set; } 
+        public bool disconnected { get; set; }
+        public bool suspicious { get; set; }
     }
 }

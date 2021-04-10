@@ -1,8 +1,11 @@
 ﻿using MuMonitoring.DTOs;
+using MuMonitoring.Static;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,12 +26,64 @@ namespace MuMonitoring
     {
         private P_Process p_process;
         bool monitor = true;
+        bool stopPeriodicStatus = false;
+        bool isColored = true;
+        Task bw_statusLed;
 
         public ProcessControler()
         {
             InitializeComponent();
+            InitPeriodic();
         }
 
+        private void InitPeriodic()
+        {
+            bw_statusLed = Task.Run(() =>
+            {
+                this.periodicStatusFunction();
+            });
+        }
+
+        private void changeCircleColor() 
+        {
+            this.Dispatcher.Invoke(() => {
+            if (this.isColored)
+            {
+                if (this.p_process != null)
+                {
+
+                    if (this.p_process.disconnected)
+                    {
+                        statusCircle.Fill = new SolidColorBrush(Colors.Red); ;
+                    }
+                    else if (this.p_process.suspicious)
+                    {
+                        statusCircle.Fill = new SolidColorBrush(Colors.Orange);
+                    }
+                    else
+                    {
+                        statusCircle.Fill = new SolidColorBrush(Colors.LightGreen);
+                    }
+                }
+            }
+            else
+            {
+                statusCircle.Fill = new SolidColorBrush(Colors.Transparent);
+            }
+            this.isColored = !this.isColored;
+            });
+        }
+
+        private void periodicStatusFunction()
+        {
+            while (!this.stopPeriodicStatus)
+            {
+                Thread.Sleep(1000);
+                this.changeCircleColor();
+            }
+        }
+
+            
         public void CustomInit(P_Process process)
         {
             this.p_process = process;
@@ -51,7 +106,6 @@ namespace MuMonitoring
 
         public object getSelected()
         {
-
             return monitor;
         }
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MuMonitoring"
         mc:Ignorable="d"
-        Title="MuMonitoring 1.0" Height="650" Width="500">
+        Title="MuMonitoring 1.0" Height="650" Width="600">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
@@ -21,31 +21,36 @@
         <TextBlock Margin="10" x:Name="headingLabel" Grid.Column="1" Grid.Row="0" FontSize="18">
             Connect your session
         </TextBlock>
-        <!--<Button Name="refreshBtn" Grid.Row="0" Grid.Column="1" Width="30" Height="30" HorizontalAlignment="Right" Click="RefreshBtn_Click">
-            <fa:FontAwesome Icon="Refresh" FontSize="25"/>
-        </Button>-->
         <Grid Name="progressContainer" Grid.Column="1" Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <TextBlock Margin="30,10,10,10" FontSize="15" Name="progressMsg" Grid.Column="0"></TextBlock>
-            <!--<ProgressBar Name="progressBar" Minimum="0" Maximum="100" Grid.Column="1"></ProgressBar>-->
         </Grid>
         <Grid Name="mainContainer"  Grid.Column="1" Grid.Row="1">
-            <!--<local:awsClientCredentials x:Name="awsClientForm"></local:awsClientCredentials>-->
             <local:Authentication x:Name="Authentication"></local:Authentication>
             
         </Grid>
 
 
-        <Grid Grid.Row="3" Grid.Column="1">
+        <Grid Grid.Row="3" Grid.Column="1" Name="controlersPane">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="150"></ColumnDefinition>
-                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition Width="250"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Button Name="exitBtn" Width="50" Height="30" Grid.Column="0" Margin="0,0,0,15" Click="ExitBtn_Click" >Exit</Button>
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="150"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Label Visibility="Hidden" Name="label_sessionN" Content="Session Name:" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <Label Visibility="Hidden" Name="label_sessionK" Content="Session Key:" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Label Content="" Name="label_SessionName" FontWeight="Bold" Foreground="Red" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <Label Content="" Name="label_SessionKey" FontWeight="Bold" Grid.Column="1" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                
+            </Grid>
             <!--<Button Name="JsonBtn" Width="90" Height="30"  Grid.Column="1" Margin="0,0,0,15" Click="JsonBtn_Click">Create Json</Button>
             <Button Name="InstallBtn" Width="90" Height="30"  Grid.Column="2" Margin="0,0,0,15" Click="InstallBtn_Click">Install Selected</Button>-->
         </Grid>

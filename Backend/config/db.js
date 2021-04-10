@@ -85,7 +85,7 @@ class DB_ {
         //remove sessions with 0 clients
         let curretTime = Date.now();
         let timeoutMS = timeoutSeconds*1000;
-
+        console.log("Removing dead sessions.")
         sessions.forEach(session => {
             let shouldDelete = !UF.isDefined(session.lastupdated);
             shouldDelete |= !UF.isDefined(session.muclients);
@@ -97,7 +97,7 @@ class DB_ {
                 console.log(`deleting ${session.username}`)
                 this.collection.deleteOne({_id: new mongodb.ObjectID(session._id)});
             }else{
-                console.log(`failed to delete ${session.username} timePassed = ${timePassedSinceLastUpdate}`)
+                //console.log(`failed to delete ${session.username} timePassed = ${timePassedSinceLastUpdate}`)
             }
         });
     }

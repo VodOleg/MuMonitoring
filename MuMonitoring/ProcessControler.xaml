@@ -5,25 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MuMonitoring"
              mc:Ignorable="d" 
-             d:DesignHeight="60" d:DesignWidth="460">
+             d:DesignHeight="25" d:DesignWidth="450">
     <Grid>
-        <Grid.RowDefinitions>
+        <!--<Grid.RowDefinitions>
             <RowDefinition Height="26"></RowDefinition>
             <RowDefinition Height="34"></RowDefinition>
-        </Grid.RowDefinitions>
-
-        <Label Grid.Row="0" Margin="10,0,0,0" x:Name="processTitle"></Label>
-        <Label Grid.Row="1" Margin="70,-5,0,0" x:Name="pidboxlabel">Process Alias :</Label>
-        <Grid Grid.Row="1">
+        </Grid.RowDefinitions>-->
+        <Grid Name="innerGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150"></ColumnDefinition>
-                <ColumnDefinition Width="150"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="25"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <!--<ComboBox Name="comboBox" Height="25" Grid.Column="0" Width="300"></ComboBox>-->
-            <TextBox x:Name="txtAlias" HorizontalAlignment="Center" Grid.Column="1" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
+            <Ellipse Name="statusCircle" Grid.Column="0" Fill="LightGreen" HorizontalAlignment="Center" Height="15" Stroke="Transparent" VerticalAlignment="Center" Width="15" />
             
-            <CheckBox Margin="0,0,0,0" Name="doInstall" Grid.Column="2" Width="100" Checked="DoInstall_Checked" Unchecked="DoInstall_Unchecked" IsChecked="True" >
+            <Label Grid.Column="1" Margin="0,0,0,0" x:Name="processTitle"></Label>
+            <Label Grid.Column="2" Margin="0,-5,0,0" x:Name="pidboxlabel">Process Alias :</Label>
+            <TextBox x:Name="txtAlias" HorizontalAlignment="Center" Grid.Column="3" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
+
+            <CheckBox Margin="0,0,0,0" Name="doInstall" Grid.Column="4" Width="100" Checked="DoInstall_Checked" Unchecked="DoInstall_Unchecked" IsChecked="True" >
                 <TextBlock Text="Monitor"></TextBlock>
             </CheckBox>
         </Grid>

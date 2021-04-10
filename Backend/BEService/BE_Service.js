@@ -7,7 +7,7 @@ class MuMonitor_Be{
         this.clientsConfig = null;
         this.customInit();
         this.periodicHandle;
-        this.watchDogTimerSec = 60;
+        this.watchDogTimerSec = 600;
     }
 
     async customInit(){
