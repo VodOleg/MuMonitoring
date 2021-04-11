@@ -69,6 +69,21 @@ namespace MuMonitoring
 
                         }
                     };
+                    m_EtwSession.Source.Kernel.TcpIpConnect += data =>
+                    {
+                        if (cancelToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                        if (m_ProcessIDs.ContainsKey(data.ProcessID))
+                        {
+                            lock (m_ProcessIDs[data.ProcessID])
+                            {
+                                m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
+                                m_ProcessIDs[data.ProcessID].disconnected = false;
+                            }
+                        }
+                    };
 
                     m_EtwSession.Source.Kernel.TcpIpDisconnect += data =>
                     {
@@ -103,11 +118,11 @@ namespace MuMonitoring
                     m_EtwSession.Source.Process();
                 }
             }
-            catch
+            catch(Exception exc)
             {
-                //ResetCounters(); // Stop reporting figures
-                // Probably should log the exception
                 Console.WriteLine("Exception caught in session ETW");
+                Console.WriteLine($"{exc.Message}");
+                Console.WriteLine($"{exc.StackTrace}");
             }
         }
 

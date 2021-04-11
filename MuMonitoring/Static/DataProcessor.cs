@@ -16,7 +16,6 @@ namespace MuMonitoring
         private int updateCounter = 0;
         private int updateThreshold = 59;
         private int processID { get; set; }
-        private bool stopNotifying = false;
         private SessionData lastData;
         AnalisysWindow analysis_window;
         private int m_sequentialBadBehaviorFrameSize;
@@ -60,55 +59,32 @@ namespace MuMonitoring
                 m_behaviour_counter = 0;
             }
 
-            //if(m_behaviour_counter > 0 && analysis_window.isReady())
-            //{
-            //    Console.WriteLine($"{this.processID}: behave counter = {m_behaviour_counter}");
-            //}
-            
-            // if more then one
             return m_behaviour_counter >= m_sequentialBadBehaviorFrameSize && analysis_window.isReady(); 
         }
 
         public void Append(SessionData data_)
         {
-            //if (stopNotifying)
-            //    return;
 
             updateCounter++;
-
-            if (data_.disconnected)
-            {
-                //Notifier.Notify($"PID {this.processID} disconnected. ( {ConfigurationManager.AppSettings["SlackMention"]} )");
-                //stopNotifying = true;
-
-            }
-
 
             if (updateCounter > updateThreshold)
             {
                 updateCounter = 0;
-                string redflag = data_.timestamp.Equals(lastData.timestamp) ? ":red_flag:" : "";
-                //Notifier.AppendForNextNotify($"PID {processID}: S({data_.sent}) R({data_.received}) T({data_.timestamp}{redflag})");
             }
 
             if (statisticsAreBad(data_.received) && !stopNotifyingStatistics)
             {
-                Console.WriteLine($"Notifying about process {this.processID}, bad statistics.");
                 suspiciousPacketCounter = 0;
-
-                // notify
-
                 data_.suspicious = true;
-
-                //stopNotifyingStatistics = true;
-                //Notifier.Notify($"PID {this.processID} might have a problem (suspicious behavior). ( {ConfigurationManager.AppSettings["SlackMention"]} )");
+            }
+            else
+            {
+                //data_.suspicious = false;
             }
 
             double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
             if (milliseconds_passed_since_data > intervalMS)
             {
-                Console.WriteLine($"Notifying: suspiciosCounter={suspiciousPacketCounter} millisPassed={milliseconds_passed_since_data}");
-                Console.WriteLine($"Data:R({data_.received}) S({data_.sent}) T({data_.timestamp})");
                 suspiciousPacketCounter++;
             }
 
@@ -116,11 +92,8 @@ namespace MuMonitoring
 
             if (suspiciousPacketCounter > suspiciousThreshold)
             {
-                Console.WriteLine($"Notifying about process {this.processID}");
+                data_.suspicious = true;
                 suspiciousPacketCounter = 0;
-                // notify
-                stopNotifying = true;
-                //Notifier.Notify($"PID {this.processID} might have a problem. ( {ConfigurationManager.AppSettings["SlackMention"]} )");
             }
 
             lastData.hardCopy(data_);
