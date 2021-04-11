@@ -102,5 +102,18 @@ namespace MuMonitoring.Static
         {
             ETWwrapper.start();
         }
+
+        internal void resetAll()
+        {
+            lock (StateManager.monitored_processes)
+            {
+                foreach(var process in StateManager.monitored_processes)
+                {
+                    process.disconnected = false;
+                    process.suspicious = false;
+                    process.doMonitor = true;
+                }
+            }
+        }
     }
 }

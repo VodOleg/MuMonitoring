@@ -47,7 +47,7 @@ namespace MuMonitoring
         private void changeCircleColor() 
         {
             this.Dispatcher.Invoke(() => {
-            if (this.isColored)
+            if (this.isColored && this.p_process.doMonitor)
             {
                 if (this.p_process != null)
                 {
@@ -97,6 +97,9 @@ namespace MuMonitoring
             {
                 txtAlias.Text = process.process.Id.ToString();
             }
+
+            this.doMonitor.IsChecked = process.doMonitor;
+            
         }
 
         public int getProcessID()
@@ -110,19 +113,21 @@ namespace MuMonitoring
         }
 
 
-        private void DoInstall_Checked(object sender, System.Windows.RoutedEventArgs e)
+        private void DoMonitor_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
             
             if (p_process!=null)
                 p_process.doMonitor = true;
             this.monitor = true;
+            Log.Write($"Do monitor checked process.domonitor={this.p_process.doMonitor.ToString()}");
         }
 
-        private void DoInstall_Unchecked(object sender, System.Windows.RoutedEventArgs e)
+        private void DoMonitor_Unchecked(object sender, System.Windows.RoutedEventArgs e)
         {
             if (p_process!=null)
                 p_process.doMonitor = false;
             this.monitor = false;
+            Log.Write($"Do monitor unchecked process.domonitor={this.p_process.doMonitor.ToString()}");
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)

@@ -18,9 +18,23 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="20"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Margin="10" x:Name="headingLabel" Grid.Column="1" Grid.Row="0" FontSize="18">
-            Connect your session
-        </TextBlock>
+        <Grid x:Name="headerContainer" Grid.Column="1" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="10"></ColumnDefinition>
+                <ColumnDefinition Width="50"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="10" x:Name="headingLabel" Grid.Column="0" FontSize="18">
+                Connect your session
+            </TextBlock>
+            <Button Visibility="Hidden" Name="Refresh_btn" Grid.Column="2" Width="30" Height="30" HorizontalAlignment="Right" Click="Refresh_btn_Click">
+                <StackPanel>
+                    <Image Name="Refresh_btn_img" Source="Assets/refresh.png"></Image>
+                </StackPanel>
+            </Button>
+            
+            
+        </Grid>
         <Grid Name="progressContainer" Grid.Column="1" Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"></ColumnDefinition>

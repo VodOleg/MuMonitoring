@@ -51,7 +51,7 @@ class MuMonitor_Be{
     
     validateSessionName(username){
         let mat = username.match("^[A-Za-z0-9]+$") ;
-        let len =  username.length <= 20;
+        let len =  username.length <= 20 && username.length >= 3;
         return len && mat!==null;
     }
 
@@ -62,7 +62,7 @@ class MuMonitor_Be{
         if (!validSessionName){
             resObject = {
                 success:false,
-                message:"Invalid Session Name. (max 20 characters, letters and digits only.)",
+                message:"Invalid Session Name. (3-20 characters, letters and digits only.)",
                 data: null
             }
             return resObject;   

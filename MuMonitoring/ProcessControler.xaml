@@ -25,7 +25,7 @@
             <Label Grid.Column="2" Margin="0,-5,0,0" x:Name="pidboxlabel">Process Alias :</Label>
             <TextBox x:Name="txtAlias" HorizontalAlignment="Center" Grid.Column="3" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
 
-            <CheckBox Margin="0,0,0,0" Name="doInstall" Grid.Column="4" Width="100" Checked="DoInstall_Checked" Unchecked="DoInstall_Unchecked" IsChecked="True" >
+            <CheckBox Margin="0,0,0,0" Name="doMonitor" Grid.Column="4" Width="100" Checked="DoMonitor_Checked" Unchecked="DoMonitor_Unchecked" >
                 <TextBlock Text="Monitor"></TextBlock>
             </CheckBox>
         </Grid>
