@@ -49,11 +49,29 @@ class MuMonitor_Be{
         return ret;
     }
     
+    validateSessionName(username){
+        console.log(".....", username);
+        let mat = username.match("^[A-Za-z0-9]+$") ;
+        let len =  username.length <= 20;
+        return len && mat!==null;
+    }
 
     async userAuth(username){
+        //check if valid session name
+        let resObject;
+        let validSessionName = this.validateSessionName(username);
+        if (!validSessionName){
+            resObject = {
+                success:false,
+                message:"Invalid Session Name. (max 20 characters, letters and digits only.)",
+                data: null
+            }
+            return resObject;
+            
+        }
+
         //check if user already exist
         let userExist = await this.db.checkifUserExist(username);
-        let resObject;
         if (userExist){
             // such session already exist
             resObject = {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,7 +25,7 @@ namespace MuMonitoring
     public partial class Authentication : UserControl
     {
         private HttpClient m_pClient;
-
+        private string sessionName = "";
 
         public static readonly RoutedEvent ConnectedEvent = EventManager.RegisterRoutedEvent(
             "Connected", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Authentication));
@@ -44,6 +45,7 @@ namespace MuMonitoring
 
         private void writeMessage(string message)
         {
+            
             this.Dispatcher.Invoke(() => {
                 this.msgText.Text = message;
 
@@ -84,5 +86,6 @@ namespace MuMonitoring
                 }
             });
     }
+
     }
 }

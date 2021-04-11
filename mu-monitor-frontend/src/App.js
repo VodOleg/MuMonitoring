@@ -139,15 +139,19 @@ renderFailureMessage(){
 
 class ProcessUI extends Component {
   
-    render(){
+  render(){
+      let d = 0;
+      if (UF.isDefined(this.props.data) && UF.isDefined(this.props.data.timestamp)){
+        d = new Date(Date.parse(this.props.data.timestamp)).toLocaleString();
+      }
       let state = {
         processID: UF.isDefined(this.props.data) ? this.props.data.processID : 0,
         alias: UF.isDefined(this.props.data) ? this.props.data.alias : "",
         disconnected: UF.isDefined(this.props.data) ? this.props.data.disconnected : false,
         suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicious : false,
-        timestamp: UF.isDefined(this.props.data) ? this.props.data.timestamp : 0
+        timestamp: d
       }
-
+      
       let variant = "success";
       let message = "Seems fine.";
       if (state.disconnected){
