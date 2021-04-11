@@ -17,7 +17,6 @@ const errorResponse = {
 // @desc Login/Landing page
 // @route GET /
 FE_router.get('/', (req,res)=>{
-    console.log("trying to get")
     res.sendFile(path.join(__dirname, "./../../mu-monitor-frontend/public", "index.html"));
       
 })

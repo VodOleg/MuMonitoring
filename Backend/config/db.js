@@ -6,7 +6,9 @@ class DB_ {
         this.dbConnected = false;
         this.connectDB(db_URI,db_name);
         this.conn = null;
-        this.collection = {}
+        this.collection = {};
+        this.Metrics = {};
+        this.MetricDocumentID = {};
     }
 
     async connectDB(db_URI,db_name){
@@ -25,8 +27,9 @@ class DB_ {
                     this.dbConnected = true;
 
                     this.collection = this.conn.collection(process.env.USER_COLLECTION);
-                    
+                    this.Metrics = this.conn.collection(process.env.METRICS_COLLECTION);
                     console.log(`MongoDB Connected`);
+                    this.updateMetricsID();
                 }
             })
             
@@ -56,6 +59,11 @@ class DB_ {
         return items[0];
     }
 
+    async updateMetricsID(){
+        let metrics = await this.Metrics.find({}).toArray();
+        this.MetricDocumentID = new mongodb.ObjectID(metrics[0]._id);
+    }
+
     createUser(username){
         // get random key
         let sessionKey_ = UF.generateKey(6);
@@ -68,6 +76,8 @@ class DB_ {
             }
         }
         )
+        this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OverallSessionsLoggedIn:1, OnlineSessions:1}});
+        
         return sessionKey_;
     }
 
@@ -96,11 +106,23 @@ class DB_ {
             if (shouldDelete){
                 console.log(`deleting ${session.username}`)
                 this.collection.deleteOne({_id: new mongodb.ObjectID(session._id)});
+                this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OnlineSessions:-1}});
+
             }else{
                 //console.log(`failed to delete ${session.username} timePassed = ${timePassedSinceLastUpdate}`)
             }
         });
     }
+
+    decrementSessions(){
+
+        // let query = { username: creds.username, sessionKey: creds.sessionKey };
+        // let newvalues = { $set: { muclients: clients, lastupdated: Date.now() } };
+        // this.collection.updateOne(query, newvalues);
+
+        // this.Metrics.updateOne({_id:t})
+    }
+    
 
     updateSession(creds, clients){
         // update with new mu clients
@@ -110,7 +132,6 @@ class DB_ {
         let newvalues = { $set: { muclients: clients, lastupdated: Date.now() } };
         this.collection.updateOne(query, newvalues);
 
-        //dbo.collection("customers").updateOne(myquery, newvalues, function(err, res) {
     }
 
     
