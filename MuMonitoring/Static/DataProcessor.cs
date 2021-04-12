@@ -62,7 +62,7 @@ namespace MuMonitoring
             return m_behaviour_counter >= m_sequentialBadBehaviorFrameSize && analysis_window.isReady(); 
         }
 
-        public void Append(SessionData data_)
+        public SessionData Append(SessionData data_)
         {
 
             updateCounter++;
@@ -76,10 +76,6 @@ namespace MuMonitoring
             {
                 suspiciousPacketCounter = 0;
                 data_.suspicious = true;
-            }
-            else
-            {
-                //data_.suspicious = false;
             }
 
             double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
@@ -97,6 +93,7 @@ namespace MuMonitoring
             }
 
             lastData.hardCopy(data_);
+            return lastData;
         }
     }
 

@@ -119,7 +119,6 @@ namespace MuMonitoring
             if (p_process!=null)
                 p_process.doMonitor = true;
             this.monitor = true;
-            Log.Write($"Do monitor checked process.domonitor={this.p_process.doMonitor.ToString()}");
         }
 
         private void DoMonitor_Unchecked(object sender, System.Windows.RoutedEventArgs e)
@@ -127,7 +126,6 @@ namespace MuMonitoring
             if (p_process!=null)
                 p_process.doMonitor = false;
             this.monitor = false;
-            Log.Write($"Do monitor unchecked process.domonitor={this.p_process.doMonitor.ToString()}");
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
