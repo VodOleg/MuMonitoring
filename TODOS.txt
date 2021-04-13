@@ -10,3 +10,10 @@
 7. Check Google analytics + Good Web push notification service.
 8. Advertisment placeholders in FE and in Client.
 9. Add credits to FrontEnd and to Client.
+10. Add mutex in client to prevent multiple concurrent instances 
+11. Add tool tips in Client and FE:
+    a. Refresh btn - the processes are refreshing automatically but you can request reset manually.
+    b. The clients are sorted in Launched order, meaning the first process to launch
+        will always be the first in the monitored list
+    c. It is recommended to add alias to your process for better readability.
+    d. Each session will be completely removed from the service once the Client is closed.
