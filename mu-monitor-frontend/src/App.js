@@ -162,9 +162,31 @@ class ProcessUI extends Component {
         variant="warning";
         message= "This process had suspiciously low activity";
       }
+      let screenWidth = window.screen.availWidth;
+      let width_ = (screenWidth - 80*4 )/4  ;
+      let margin_ = "3% 0% 0 20px";
+      let float_ = "left";
+      let style_ = {width: width_, margin:"3% 0% 0 20px", float:"left"};
+      if (width_ < 300){
+        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        //width_ = 300;
+      }
+      if( width_ < 200 ){
+        margin_ = "3% auto";
+        float_ = "none";
+        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        
+      }
+      
+      if( width_ < 100 ){
+        margin_ = "3% auto";
+        float_ = "none";
+        style_ = {width: "300", margin:"3% auto", display:"block"}
+      }
 
-      let ele = <Wrap>
-        <Alert variant={variant}>
+      let ele = <Wrap > 
+        {/* <Alert style={{width: width_,margin:margin_, float:float_}} variant={variant}> */}
+        <Alert style={style_} variant={variant}>
         <Alert.Heading>{state.alias} ({state.processID})  </Alert.Heading>
         <p>
           {message}

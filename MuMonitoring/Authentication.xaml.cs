@@ -24,7 +24,6 @@ namespace MuMonitoring
     /// </summary>
     public partial class Authentication : UserControl
     {
-        private HttpClient m_pClient;
         private string sessionName = "";
 
         public static readonly RoutedEvent ConnectedEvent = EventManager.RegisterRoutedEvent(
@@ -40,7 +39,6 @@ namespace MuMonitoring
         public Authentication()
         {
             InitializeComponent();
-            m_pClient = new HttpClient();
         }
 
         private void writeMessage(string message)
@@ -52,40 +50,50 @@ namespace MuMonitoring
             });
         }
 
+        private void authenticate(string username)
+        {
+            Credentials userID = new Credentials(username);
+
+            string response = BackendCom.Authenticate(userID);
+            if (String.IsNullOrEmpty(response))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    RaiseEvent(new RoutedEventArgs(Authentication.ConnectedEvent, this));
+
+                });
+            }
+            else
+            {
+                writeMessage(response);
+            }
+            
+            
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Credentials userID = new Credentials(UserNameID.Text);
-            BackendCom.Authenticate(userID).ContinueWith((task)=> {
-                dynamic response = task.Result;        
-                if (response != null && (bool)response.success)
-                {
-                    // call 
-                    userID.sessionKey = (string)response.data.SessionKey;
-                    ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
-                    StateManager.Init(userID, config);
-                    Dispatcher.Invoke(() =>
-                    {
-                        RaiseEvent(new RoutedEventArgs(Authentication.ConnectedEvent, this));
+            string username = UserNameID.Text;
 
-                    });
-                }
-                else
-                {
-                    string message = "Failed creating session: ";
-                    if (response != null)
-                    {
-                        message += response.message;
+            Task tsk = new Task(() => { authenticate(username); });
+            tsk.Start();
 
-                    }
-                    else
-                    {
-                        message += "no connection to server";
-                    }
-                    Log.Write(message);
-                    writeMessage(message);
-                }
-            });
-    }
+        }
 
+        private void UserNameID_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Regex regex1 = new Regex(@"^[a-zA-Z0-9_]+$");
+            string ne_msg = UserNameID.Text;
+            string old = UserNameID.Text.Substring(0, UserNameID.Text.Length - e.Changes.Count);
+            if (ne_msg.Length <= 10 && regex1.IsMatch(ne_msg))
+            {
+                sessionName = ne_msg;
+            }
+            else
+            {
+                sessionName = old;
+                UserNameID.Text = old;
+            }
+        }
     }
 }

@@ -15,6 +15,7 @@ namespace MuMonitoring.DTOs
         public int AnalysisWindowSize { get; set; }
         public int ClientRefreshTimeSec { get; set; }
         public int KeepAliveTimeSec { get; set; }
+        public Version NewestClientVersion { get; set; }
         public ClientConfigDTO() { }
 
         public ClientConfigDTO(dynamic config) 
@@ -26,6 +27,7 @@ namespace MuMonitoring.DTOs
             AnalysisWindowSize = (int)config.AnalysisWindowSize;
             ClientRefreshTimeSec = (int)config.ClientRefreshTimeSec;
             KeepAliveTimeSec = (int)config.KeepAliveTimeSec;
+            NewestClientVersion = new Version((string)config.NewestClientVersion);
         }
     }
 }

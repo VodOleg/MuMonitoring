@@ -3,8 +3,6 @@ using MuMonitoring.Static;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +18,7 @@ namespace MuMonitoring
         // API strings 
         private static string m_Const_startSession = "/StartSession";
         private static string m_Const_updateSession = "/UpdateSession";
-
+        private static System.Threading.Mutex oSingleInstance;
         public static bool isConnected()
         {
             return m_client != null;
@@ -28,15 +26,28 @@ namespace MuMonitoring
 
         public static bool Init()
         {
+            Log.Write("Initializing App");
+            bool ok;
+            oSingleInstance = new System.Threading.Mutex(true, "MuMonitor_", out ok);
+
+            if (!ok)
+            {
+                // Another instance is already running. Exit
+                System.Windows.MessageBox.Show("Another instance of MuMonitor already running.", "MuMonitor");
+                System.Windows.Application.Current.Shutdown();
+            }
+
+            // Get current version
+            
+
             if (isConnected())
             {
                 return true;
             }
             string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            Log.Write($"Logged in as {userName}");
             if (!userName.ToLower().Contains("ovod"))
             {
-                BackendURL = "http://10.88.253.49:3000";
+                BackendURL = "http://10.88.253.44:3000";
             }
 
             m_client = new HttpClient();
@@ -46,30 +57,68 @@ namespace MuMonitoring
 
         private static async Task<string> sendPost(string url_, StringContent content)
         {
-            var res = m_client.PostAsync(url_, content).Result;
-            var resString = await res.Content.ReadAsStringAsync();
+            string resString = null;
+            try
+            {
+                var res = m_client.PostAsync(url_, content).Result;
+                resString = await res.Content.ReadAsStringAsync();
+            }catch(Exception exc)
+            {
+                Log.Write($"Exception occured at sendPost: {exc}");
+                Log.Write($"{exc.StackTrace}");
+            }
             return resString;
         }
 
-        public static async Task<dynamic> Authenticate(Credentials credentials)
+        private static void validateVersion(Version newestVersion)
+        {
+            Version currentVersion = new Version(MainWindow.m_sCurrentVersion);
+            if ( currentVersion < newestVersion)
+            {
+                // notify about update
+            }
+        }
+
+        public static string Authenticate(Credentials credentials)
         {
             JObject o = new JObject();
-            dynamic resObj = null;
+            string res_= "Failed creating session: ";
             try
             {
                 o["username"] = credentials.username;
                 var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
                 string res = sendPost(BackendURL+m_Const_startSession, httpContent).Result;
-                resObj = JsonConvert.DeserializeObject(res);
-
-            }catch(Exception exc)
+                dynamic response = null;
+                if (res != null) { 
+                    response = JsonConvert.DeserializeObject(res);
+                };
+                if (response != null && (bool)response.success)
+                {
+                    // call 
+                    credentials.sessionKey = (string)response.data.SessionKey;
+                    ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
+                    validateVersion(config.NewestClientVersion);
+                    StateManager.Init(credentials, config);
+                    res_ = "";
+                }
+                else if ( response != null)
+                {
+                    res_ += response.message;
+                }
+                else
+                {
+                    res_ += "Failed connecting to server";
+                }
+            }
+            catch(Exception exc)
             {
+                res_ += "Exception occured.";
                 Log.Write("Error occured when trying to authenticate \n "+exc.Message);
                 Log.Write(exc.StackTrace);
             }
 
 
-            return resObj;
+            return res_;
         }
 
         public static async Task<bool> sendDataToBE()

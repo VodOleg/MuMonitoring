@@ -1,23 +1,10 @@
-﻿using MuMonitoring.DTOs;
-using MuMonitoring.Static;
+﻿using MuMonitoring.Static;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MuMonitoring
 {
@@ -32,6 +19,8 @@ namespace MuMonitoring
         public BackgroundWorker bw_refreshThread; 
         public BackgroundWorker bw_dataAnalyzer;
         public BackgroundWorker bw_BE_reporter;
+        public static string m_sCurrentVersion;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -106,6 +95,7 @@ namespace MuMonitoring
             {
                 m_pMonitor.analyzeData();
                 Thread.Sleep(StateManager.m_config.pollingIntervalMS);
+                this.log("extracting data with a  ver long string to show");
             }
         }
 
@@ -116,6 +106,7 @@ namespace MuMonitoring
             {
                 Thread.Sleep(StateManager.m_config.KeepAliveTimeSec * 1000);
                 BackendCom.sendDataToBE();
+                this.log("sending data");
             }
         }
 
@@ -126,24 +117,53 @@ namespace MuMonitoring
             bw_refreshThread = new BackgroundWorker();
             bw_refreshThread.DoWork += this.periodicUIRefresherHandle;
             bw_refreshThread.RunWorkerAsync();
-            //bw_refreshThread = Utils.startBWThread(this.periodicUIRefresherHandle);
             m_pMonitor.run();
 
             bw_dataAnalyzer = new BackgroundWorker();
             bw_dataAnalyzer.DoWork += this.periodicDataExtraction;
             bw_dataAnalyzer.RunWorkerAsync();
-            //bw_dataAnalyzer = Utils.startBWThread(this.periodicDataExtraction);
 
             bw_BE_reporter = new BackgroundWorker();
             bw_BE_reporter.DoWork += this.periodicKeepAlive;
             bw_BE_reporter.RunWorkerAsync();
-            //bw_BE_reporter = Utils.startBWThread(this.periodicKeepAlive);
+
         }
 
+
+        private void changeVersionInTitle()
+        {
+            m_sCurrentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.Dispatcher.Invoke(() => {
+                this.Title = $"MuMonitor {m_sCurrentVersion}";
+            });
+        }
+
+        public void log(string message)
+        {
+            DateTime now_ = DateTime.Now;
+            string msg = $"{now_.Hour}:{now_.Minute} - {message}\n";
+            this.Dispatcher.Invoke(() => {
+                //this.dialogBox.Text += msg;
+                Label txt = new Label();
+                //txt.TextWrapping = TextWrapping.WrapWithOverflow;
+                txt.Content = msg;
+                txt.MaxHeight = 20;
+                this.dialogPanel.Children.Add(txt);
+                //scrollPanel.
+                
+            });
+
+        }
 
         private void CustomInit()
         {
             Log.Start();
+            log("1");
+            log("2");
+            log("3");
+            log("4");
+            log("5");
+            changeVersionInTitle();
             BackendCom.Init();
         }
 

@@ -16,12 +16,12 @@ namespace MuMonitoring.Static
         public static readonly object monitoredProcessesMutex = new object();
         public static List<P_Process> monitored_processes = new List<P_Process>();
         public static List<ClientProcessDTO> data_to_send = new List<ClientProcessDTO>();
-
         public static void Init(Credentials creds, ClientConfigDTO config)
         {
             // init
             m_creds = creds;
             m_config = config;
+
         }
 
         public static void addData(P_Process process, SessionData data)

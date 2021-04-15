@@ -51,6 +51,7 @@
         <Grid Grid.Row="3" Grid.Column="1" Name="controlersPane">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="225"></ColumnDefinition>
                 <ColumnDefinition Width="250"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Button Name="exitBtn" Width="50" Height="30" Grid.Column="0" Margin="0,0,0,15" Click="ExitBtn_Click" >Exit</Button>
@@ -65,7 +66,12 @@
                 <Label Content="" Name="label_SessionKey" FontWeight="Bold" Grid.Column="1" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 
             </Grid>
-            <!--<Button Name="JsonBtn" Width="90" Height="30"  Grid.Column="1" Margin="0,0,0,15" Click="JsonBtn_Click">Create Json</Button>
+                <ScrollViewer Grid.Column="2" Height="80" Name="scrollPanel" VerticalScrollBarVisibility="Auto" >
+                    <StackPanel Height="80" Name="dialogPanel"></StackPanel>
+                    <!--<TextBlock x:Name="dialogBox" TextWrapping="Wrap"></TextBlock>-->
+
+                </ScrollViewer>
+                <!--<Button Name="JsonBtn" Width="90" Height="30"  Grid.Column="1" Margin="0,0,0,15" Click="JsonBtn_Click">Create Json</Button>
             <Button Name="InstallBtn" Width="90" Height="30"  Grid.Column="2" Margin="0,0,0,15" Click="InstallBtn_Click">Install Selected</Button>-->
         </Grid>
     </Grid>
