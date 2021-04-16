@@ -19,6 +19,8 @@ namespace MuMonitoring
         private static string m_Const_startSession = "/StartSession";
         private static string m_Const_updateSession = "/UpdateSession";
         private static System.Threading.Mutex oSingleInstance;
+        
+        
         public static bool isConnected()
         {
             return m_client != null;
@@ -75,7 +77,7 @@ namespace MuMonitoring
             Version currentVersion = new Version(MainWindow.m_sCurrentVersion);
             if ( currentVersion < newestVersion)
             {
-                // notify about update
+                Utils.NotifyUser("New Version Is Availble");
             }
         }
 

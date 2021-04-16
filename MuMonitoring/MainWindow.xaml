@@ -52,7 +52,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
                 <ColumnDefinition Width="225"></ColumnDefinition>
-                <ColumnDefinition Width="250"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Button Name="exitBtn" Width="50" Height="30" Grid.Column="0" Margin="0,0,0,15" Click="ExitBtn_Click" >Exit</Button>
             <Grid Grid.Column="1">
@@ -66,13 +66,13 @@
                 <Label Content="" Name="label_SessionKey" FontWeight="Bold" Grid.Column="1" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 
             </Grid>
-                <ScrollViewer Grid.Column="2" Height="80" Name="scrollPanel" VerticalScrollBarVisibility="Auto" >
-                    <StackPanel Height="80" Name="dialogPanel"></StackPanel>
-                    <!--<TextBlock x:Name="dialogBox" TextWrapping="Wrap"></TextBlock>-->
 
-                </ScrollViewer>
-                <!--<Button Name="JsonBtn" Width="90" Height="30"  Grid.Column="1" Margin="0,0,0,15" Click="JsonBtn_Click">Create Json</Button>
-            <Button Name="InstallBtn" Width="90" Height="30"  Grid.Column="2" Margin="0,0,0,15" Click="InstallBtn_Click">Install Selected</Button>-->
+            <Border Name="log_container_border" Visibility="Hidden" Grid.Column="2" Height="90" VerticalAlignment="Top" BorderBrush="LightGray" BorderThickness="1">
+
+                <Grid  Name="log_container">
+
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </Window>

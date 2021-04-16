@@ -20,6 +20,16 @@ namespace MuMonitoring
         public BackgroundWorker bw_dataAnalyzer;
         public BackgroundWorker bw_BE_reporter;
         public static string m_sCurrentVersion;
+        private static string[] m_dialogStrings = new string[2];
+        private static int dialog_index = 0;
+        public static List<string> m_logList = new List<string>();
+
+        
+
+        private void logRequested(object sender, EventArgs e)
+        {
+            log(null);
+        }
 
         public MainWindow()
         {
@@ -40,7 +50,8 @@ namespace MuMonitoring
             label_SessionName.Content = StateManager.m_creds.username;
             label_SessionKey.Content = StateManager.m_creds.sessionKey;
             Refresh_btn.Visibility = Visibility.Visible;
-            
+            log_container_border.Visibility = Visibility.Visible;
+
             startClient();
         }
 
@@ -95,7 +106,6 @@ namespace MuMonitoring
             {
                 m_pMonitor.analyzeData();
                 Thread.Sleep(StateManager.m_config.pollingIntervalMS);
-                this.log("extracting data with a  ver long string to show");
             }
         }
 
@@ -106,7 +116,6 @@ namespace MuMonitoring
             {
                 Thread.Sleep(StateManager.m_config.KeepAliveTimeSec * 1000);
                 BackendCom.sendDataToBE();
-                this.log("sending data");
             }
         }
 
@@ -141,16 +150,30 @@ namespace MuMonitoring
         public void log(string message)
         {
             DateTime now_ = DateTime.Now;
-            string msg = $"{now_.Hour}:{now_.Minute} - {message}\n";
+            if (!string.IsNullOrEmpty(message))
+            {
+                string msg = $"{now_.Hour}:{now_.Minute} - {message}\n";
+                m_logList.Add(msg);
+            }
             this.Dispatcher.Invoke(() => {
-                //this.dialogBox.Text += msg;
-                Label txt = new Label();
-                //txt.TextWrapping = TextWrapping.WrapWithOverflow;
-                txt.Content = msg;
-                txt.MaxHeight = 20;
-                this.dialogPanel.Children.Add(txt);
-                //scrollPanel.
+                log_container.Children.Clear();
+                ScrollViewer sv = new ScrollViewer();
+                StackPanel sp = new StackPanel();
+                sv.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                foreach(var i in m_logList)
+                {
+                    TextBlock tb = new TextBlock();
+                    tb.TextWrapping = TextWrapping.Wrap;
+                    tb.Text = i;
+                    tb.Padding = new Thickness(5);
+                    tb.Height = 20;
+                    sp.Children.Add(tb);
+                }
+                sv.Content = sp;
+                log_container.Children.Add(sv);
+            
                 
+
             });
 
         }
@@ -158,11 +181,7 @@ namespace MuMonitoring
         private void CustomInit()
         {
             Log.Start();
-            log("1");
-            log("2");
-            log("3");
-            log("4");
-            log("5");
+            Utils.newLogMessage += new EventHandler(logRequested);
             changeVersionInTitle();
             BackendCom.Init();
         }
