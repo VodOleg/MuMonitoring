@@ -1,0 +1,2 @@
+xcopy "Backend" ".\ToDeploy\Backend\" /EXCLUDE:excludeBE.txt /s /d /f /y /c
+CALL scp -i mumonitorkey.pem -rp -o StrictHostKeyChecking=no ".\ToDeploy\Backend" ec2-user@ec2-18-156-107-188.eu-central-1.compute.amazonaws.com:~/MuMonitor/

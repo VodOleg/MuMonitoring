@@ -1,0 +1,1 @@
+start cmd /k ssh -i "mumonitorkey.pem" ec2-user@ec2-18-156-107-188.eu-central-1.compute.amazonaws.com

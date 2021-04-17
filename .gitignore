@@ -5,3 +5,5 @@ Backend/node_modules
 packages
 Backend/Summary.log
 Backend/.vscode
+ToDeploy/Backend
+*.pem

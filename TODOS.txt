@@ -1,17 +1,16 @@
-1. Add Email Notification (BE)
-2. Add Discord Notification (BE)
+7. Check Google analytics + Good Web push notification service. - Will do at deploy
+1. Add Email Notification (BE) + (FE)
+2. Add Discord Notification (BE) +(FE)
+4. Add client <-> server version validation. - Done notification + add notification at FE ?
 3. Fine tune client safe zone recognition
-    a. cubera mines are not recognized properly.
     b. recognition turns on and off (should be more definitive)
-4. Add client <-> server version validation.
-5. Implement Auto update for client. (or notification)
-6. style the front end, currently not efficient use of space
-    a. maybe place the tiles horizontally
-7. Check Google analytics + Good Web push notification service.
+5. Implement Auto update for client. (or notification) - Done
+6. style the front end, currently not efficient use of space - Done
+    a. maybe place the tiles horizontally - Done
 8. Advertisment placeholders in FE and in Client.
 9. Add credits to FrontEnd and to Client.
 10. Add mutex in client to prevent multiple concurrent instances - DONE
-11. Remove Logs from Production build.
+11. Remove Logs from Production build + remove local host.
 11. Add tool tips in Client and FE:
     a. Refresh btn - the processes are refreshing automatically but you can request reset manually.
     b. The clients are sorted in Launched order, meaning the first process to launch

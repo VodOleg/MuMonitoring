@@ -49,7 +49,7 @@ namespace MuMonitoring
             string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
             if (!userName.ToLower().Contains("ovod"))
             {
-                BackendURL = "http://10.88.253.44:3000";
+                BackendURL = "http://ec2-18-156-107-188.eu-central-1.compute.amazonaws.com:3000";
             }
 
             m_client = new HttpClient();
