@@ -9,6 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="40"></RowDefinition>
             <RowDefinition Height="100"></RowDefinition>
@@ -18,14 +19,16 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="20"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Grid x:Name="headerContainer" Grid.Column="1" Grid.Row="0">
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Image Source="Assets/logo_main.png"/>
+        </Grid>
+        <Grid x:Name="headerContainer" Grid.Column="1" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition Width="10"></ColumnDefinition>
                 <ColumnDefinition Width="50"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <TextBlock Margin="10" x:Name="headingLabel" Grid.Column="0" FontSize="18">
-                Connect your session
             </TextBlock>
             <Button Visibility="Hidden" Name="Refresh_btn" Grid.Column="2" Width="30" Height="30" HorizontalAlignment="Right" Click="Refresh_btn_Click">
                 <StackPanel>
@@ -35,20 +38,20 @@
             
             
         </Grid>
-        <Grid Name="progressContainer" Grid.Column="1" Grid.Row="2">
+        <Grid Name="progressContainer" Grid.Column="1" Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <TextBlock Margin="30,10,10,10" FontSize="15" Name="progressMsg" Grid.Column="0"></TextBlock>
         </Grid>
-        <Grid Name="mainContainer"  Grid.Column="1" Grid.Row="1">
+        <Grid Name="mainContainer"  Grid.Column="1" Grid.Row="2">
             <local:Authentication x:Name="Authentication"></local:Authentication>
             
         </Grid>
 
 
-        <Grid Grid.Row="3" Grid.Column="1" Name="controlersPane">
+        <Grid Grid.Row="4" Grid.Column="1" Name="controlersPane">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
                 <ColumnDefinition Width="225"></ColumnDefinition>

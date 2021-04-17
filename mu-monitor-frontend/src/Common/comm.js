@@ -2,7 +2,7 @@
 // using axios
 
 import axios from 'axios';
-import {UtilityFunctions as UF, UtilityFunctions} from './Utils';
+import {UtilityFunctions as UF} from './Utils';
 
 class BE_Comm{
     constructor(){
