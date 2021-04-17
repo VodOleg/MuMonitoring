@@ -4,6 +4,7 @@ import Wrap from './Common/Wrap';
 import {Form, Button, Alert} from 'react-bootstrap';
 import BE from './Common/comm';
 import {UtilityFunctions as UF} from './Common/Utils';
+import logo from './logo_main.png';
 
 class App extends Component {
   constructor(props){
@@ -58,7 +59,7 @@ class App extends Component {
         <Form onSubmit={this.onSubmitCustom}>
             <Form.Group controlId="formBasicSessionName">
                 <Form.Label>Session Name</Form.Label>
-                <Form.Control type="text" placeholder="Your Session name" value={this.state.SessionName} onChange={this.SessionNameChanged}/>
+                <Form.Control type="text" placeholder="Your Session Name" value={this.state.SessionName} onChange={this.SessionNameChanged}/>
                 <Form.Text className="text-muted">
                 This is the session name you picked when started the app on your machine.
                 </Form.Text>
@@ -162,8 +163,25 @@ renderToS(){
   return ele;
 }
 
+renderFooter(){
+  let ele = <Wrap>
+    <footer className="footer-continer">  
+    For business and feature request inquaries, please reach out to mumonitor.com@gmail.com<br />
+    @Copyright OlegVod 2021- All Right Reserved.   
+    </footer>
+  </Wrap>
+  return ele;
+}
+
+renderGeneral(){
+  let ele = <Wrap>
+k
+  </Wrap>
+  return ele;
+}
+
   render() {
-    return (
+    return (<Wrap>
     <div className="App">
       <link
         rel="stylesheet"
@@ -171,21 +189,33 @@ renderToS(){
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
         crossOrigin="anonymous"
       />
-      {this.renderToS()}
-      {!this.state.loggedIn ? 
-      <div className="loginForm">
-        {this.renderLoginDiv()}
-        {
-          this.state.invalidSessionCredentials ? 
-          this.renderFailureMessage(): null
-        }
+      <div className="logo-container">
+        <img src={logo} alt="MuMonitor"></img>
       </div>
+      {!this.state.loggedIn ? 
+      <Wrap>
+        <div className="loginForm">
+          {this.renderLoginDiv()}
+          {
+            this.state.invalidSessionCredentials ? 
+            this.renderFailureMessage(): null
+          }
+        </div>
+        <div className="general">
+          {this.renderGeneral()}
+        </div>
+
+      </Wrap>
       :
       <div className="dataWrapper">
         {this.renderData()}       
       </div>  
     }
+    {
+    }
     </div>
+    {this.renderFooter()}
+    </Wrap>
     )
   
 }
