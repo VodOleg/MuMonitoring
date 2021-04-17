@@ -13,7 +13,6 @@ class DB_ {
 
     async connectDB(db_URI,db_name){
         try{
-            console.log(`trying to connect db to ${db_URI} `)
             mongodb.MongoClient.connect(db_URI, {useUnifiedTopology:true}, (err,client)=>{
                 if (err){
                     // error connecting to db
@@ -21,14 +20,12 @@ class DB_ {
                     console.log(err);
                 }else{
                     // connection was succesfull
-                    //console.log(db);
                     this.conn = client.db(db_name);
                     
                     this.dbConnected = true;
 
                     this.collection = this.conn.collection(process.env.USER_COLLECTION);
                     this.Metrics = this.conn.collection(process.env.METRICS_COLLECTION);
-                    console.log(`MongoDB Connected`);
                     this.updateMetricsID();
                 }
             })
@@ -48,7 +45,6 @@ class DB_ {
         while (!this.dbConnected){
             await UF.sleep(1000);
         }
-        console.log("requesting clients config")
         let configCollection = this.conn.collection(process.env.CONFIG_COLLECTION);
         let items = await configCollection.find().toArray();
         if (items.length < 1){
@@ -86,16 +82,18 @@ class DB_ {
         return session;
     }
 
-    
+    async updateMetrics(eventName){
+        let attribute = {}
+        attribute[eventName] = 1;
+        this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : attribute});
+    }
 
     //get all sessions from db and remove sessions that werent update in the past watchDogTimerSec
     async removeDeadSessions(timeoutSeconds){
         let sessions = await this.collection.find({}).toArray();
-        //console.log(sessions);
         //remove sessions with 0 clients
         let curretTime = Date.now();
         let timeoutMS = timeoutSeconds*1000;
-        console.log("Removing dead sessions.")
         sessions.forEach(session => {
             let shouldDelete = !UF.isDefined(session.lastupdated);
             shouldDelete |= !UF.isDefined(session.muclients);
@@ -104,25 +102,12 @@ class DB_ {
             let timePassedSinceLastUpdate = curretTime-session.lastupdated;
             shouldDelete |= (UF.isDefined(session.lastupdated) && timePassedSinceLastUpdate > (timeoutSeconds*1000 )  );
             if (shouldDelete){
-                console.log(`deleting ${session.username}`)
                 this.collection.deleteOne({_id: new mongodb.ObjectID(session._id)});
                 this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OnlineSessions:-1}});
 
-            }else{
-                //console.log(`failed to delete ${session.username} timePassed = ${timePassedSinceLastUpdate}`)
             }
         });
     }
-
-    decrementSessions(){
-
-        // let query = { username: creds.username, sessionKey: creds.sessionKey };
-        // let newvalues = { $set: { muclients: clients, lastupdated: Date.now() } };
-        // this.collection.updateOne(query, newvalues);
-
-        // this.Metrics.updateOne({_id:t})
-    }
-    
 
     updateSession(creds, clients){
         // update with new mu clients

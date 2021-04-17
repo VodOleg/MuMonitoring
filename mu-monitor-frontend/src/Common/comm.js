@@ -52,7 +52,6 @@ class BE_Comm{
             }
         };
         let request = this.BE_URL+controller;
-        //console.log(`sending request to:`,request);
         let response = null;
         try{
             if (type ==='post'){

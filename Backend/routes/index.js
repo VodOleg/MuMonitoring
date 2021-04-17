@@ -17,9 +17,9 @@ const errorResponse = {
 router.post('/StartSession',async (req,res)=>{
     // TODO: protect from DOS attack? 
     try{
-        console.log(req.body);
         let response = await MuMonitorBE.userAuth(req.body.username);
         res.status(200).json(response);
+        MuMonitorBE.logEvent("clientConnected");
     }catch(exc){
         console.error("Exception occured when trying to connect:");
         console.error(response);

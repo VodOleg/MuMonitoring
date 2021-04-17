@@ -39,6 +39,10 @@ class MuMonitor_Be{
             console.log(`Exception occured when updating session\n ${exc}`);
         }
     }
+
+    logEvent(eventName){
+        this.db.updateMetrics(eventName);
+    }
     
     async getSessions(SessionName, SessionKey){
         let session = await this.db.getSession(SessionName,SessionKey);

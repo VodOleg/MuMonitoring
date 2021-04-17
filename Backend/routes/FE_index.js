@@ -17,6 +17,7 @@ const errorResponse = {
 // @desc Login/Landing page
 // @route GET /
 FE_router.get('/', (req,res)=>{
+    BE.logEvent("webPageRequested");
     res.sendFile(path.join(__dirname, "./../../mu-monitor-frontend/public", "index.html"));
       
 })
@@ -26,9 +27,11 @@ FE_router.post('/login', (req,res)=>{
         BE.getSessions(req.body.SessionName, req.body.SessionKey).then((success)=>{
             let bodyresponse = {response:UtilityFunctions.isDefined(success) ? true : false , payload:success};
             res.status(200).json(bodyresponse);
+            BE.logEvent("successfullLogin")
         })
     }else{
         res.status(401).json({response:false});
+        BE.logEvent("failedLogin")
     }
 })
 

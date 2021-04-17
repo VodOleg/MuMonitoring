@@ -1,5 +1,4 @@
 .App{
-  min-height: calc(100vh - 70px);
 }
 
 
@@ -17,20 +16,22 @@
 }
 
 .dataWrapper{
-  margin:1% auto;
+  margin:0 auto;
+  max-height: 75vh;
+  overflow-y: auto;
 }
 
 .logo-container{
   max-width: fit-content;
   text-align: center;
-  margin: 3% auto;
+  margin: 2% auto;
 }
 
 .footer-continer{
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 70px;
+  height: 4rem;
   text-align: center;
   font-size: small;
   border-top: lightslategray;

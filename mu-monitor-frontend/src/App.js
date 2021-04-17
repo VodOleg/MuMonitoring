@@ -17,7 +17,6 @@ class App extends Component {
       clients: [],
       showTos:false
     }
-    console.log("from new deploy")
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
 
@@ -84,11 +83,22 @@ class App extends Component {
 
 renderData(){
   let uiClients = []
+  let ad_index = 0;
+  let ad_key = 0;
+  uiClients.push(<Ad key={"ad_"+ad_key}>This ad could be yours!</Ad>)
+  ad_index++;
   this.state.clients.forEach(client => {
     let key_= "ui_item_of_"+client.processID;
     uiClients.push(
       <ProcessUI data={client} key={key_} name={key_}/>     
-    )
+      )
+      if(ad_index % 5 === 0){
+        ad_index = 1;
+        ad_key++;
+        uiClients.push(<Ad key={"ad_"+ad_key}>This ad could be yours!</Ad>)
+    }else{
+      ad_index++;
+    }
   });
   if (this.state.clients.length === 0){
     uiClients.push(
@@ -180,6 +190,8 @@ renderFooter(){
   </Wrap>
   return ele;
 }
+
+
 
 downloadClicked(){
   this.setState({
@@ -301,6 +313,45 @@ class ProcessUI extends Component {
         <p className="mb-0">
           Timestamp: {state.timestamp}
         </p>
+      </Alert>
+      </Wrap>;
+      return ele;
+    }
+  
+}
+
+
+class Ad extends Component {
+  
+  render(){
+      
+      let variant = "light";
+      
+      let screenWidth = window.screen.availWidth;
+      let width_ = (screenWidth - 80*4 )/4  ;
+      let style_ = {borderColor:"lightgrey" ,width: width_, margin:"3% 0% 0 20px", float:"left"};
+      if (width_ < 300){
+        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left"};
+      }
+      if( width_ < 200 ){
+        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left"};
+      }
+      if( width_ < 100 ){
+        style_ = {borderColor:"lightgrey" ,width: "300", margin:"3% auto", display:"block"}
+      }
+      
+
+      let ele = <Wrap > 
+        <Alert style={style_} variant={variant}>
+        <Alert.Heading> Advertisment </Alert.Heading>
+        <p>
+          {this.props.children}
+        </p>
+        <hr />
+        <p>
+          mumonitor.com@gmail.com
+        </p>
+      
       </Alert>
       </Wrap>;
       return ele;
