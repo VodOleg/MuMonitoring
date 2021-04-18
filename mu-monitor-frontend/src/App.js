@@ -17,11 +17,13 @@ class App extends Component {
       clients: [],
       showTos:false,
       showEmailConfirm:false,
-      email:"your email for notifications"
+      email:"",
+      email_place_holder:"your email for notifications",
+      email_color: "white"
     }
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
-
+    
     this.periodicHandle = setInterval(() => {
       this.fetchData();
     }, 1000 * 60);
@@ -43,7 +45,7 @@ class App extends Component {
         }
         if (loggedIn){
           let email = UF.isDefined(sessions.email) ? sessions.email : "your email for notifications";
-          this.setState({clients:sessions.muclients, email:email})
+          this.setState({clients:sessions.muclients, email_place_holder:email})
         }else{
           this.setState({loggedIn:false})
         }
@@ -61,7 +63,7 @@ class App extends Component {
   go_login(e){
     BE.tryLogIn(this.state.SessionName, this.state.SessionKey).then((res)=>{
       if (res.authenticated)
-        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients, invalidSessionCredentials:true });
+        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients, invalidSessionCredentials:false });
       else
         this.setState({loggedIn:res.authenticated,invalidSessionCredentials:true});
     });    
@@ -154,14 +156,45 @@ confirmationClose(){
   this.setState({showEmailConfirm:false});
 }
 
+verifyCode(code){
+  let verified = this.state.emailVerificationCode === code.value;
+  if( !verified ){
+    // notify wrong code
+    alert("incorrect code, check the email for the code MuMonitor has sent.");
+    this.setState({
+      email_color:"#fed5d9"
+    })
+  }else{
+    if(UF.isNonEmptyString(this.state.email)){
+      BE.notifyMailVerified(this.state.SessionName, this.state.SessionKey, this.state.email);
+      this.setState({
+        email_color:"#dffcc0",
+        showEmailConfirm: false
+      })
+    }
+  }
+}
+
 renderEmailModal(){
   let ele = <Wrap>
     <SimpleMessageModal onClose={this.confirmationClose.bind(this)}>
-      Update mail for this session.<br />
+      <p>Update mail for this session.<br />
       Please note:<br />
       - You will receive one email per client event.<br />
-      - Yor email will be removed from the service when the session is closed. <br />
-      - Email might be filtered to spam box. 
+      - Email might be filtered to spam box. </p>
+      <p className="mb-0" style={{fontSize:"small"}}>
+          To use email notification please verify the email by filling in the code sent to the email you submmitted.<br />
+          * <span style={{color:"gray", fontSize:"smaller"}}>The verification is required once per email address.</span>
+          <div style={{width:"200px"}}>
+          <InputWithSubmit
+          value="" 
+          type="number" 
+          placeholder={"4-digit code."} 
+          title="Code" 
+          applyCB={this.verifyCode.bind(this)}
+           ></InputWithSubmit>
+           </div>
+      </p>
     </SimpleMessageModal>
   </Wrap>
   return ele;
@@ -252,10 +285,31 @@ tosClosed(){
 }
 
 registerEmail(item){
-  BE.registerEmail(this.state.SessionName,this.state.SessionKey,item.value);
-  this.setState({
-    showEmailConfirm:true
+  BE.registerEmail(this.state.SessionName,this.state.SessionKey,item.value).then((emailObj)=>{
+    if (UF.isDefined(emailObj)){
+      if (emailObj.verified){
+        this.setState({
+          email:item.value,
+          email_color:"#dffcc0"
+        })
+      }else if(emailObj.banned){
+        this.setState({
+          email:item.value,
+          email_color:"#fed5d9"
+        })
+      }else
+      {
+        this.setState({
+          email:item.value,
+          emailVerificationCode: emailObj.code,
+          showEmailConfirm:true
+        });
+      }
+    }
+    
   });
+  // if mail verified notify all set
+  // else promt with email confirm
 }
 
 renderGeneral(){
@@ -306,8 +360,9 @@ renderGeneral(){
           <InputWithSubmit 
           value="" 
           type="email" 
-          placeholder={this.state.email} 
+          placeholder={this.state.email_place_holder} 
           title="Email" 
+          color={this.state.email_color}
           applyCB={this.registerEmail.bind(this)} />
 
         </div>
@@ -481,12 +536,17 @@ class InputWithSubmit extends Component {
   }
 
   render() {
+    let _color ="white";
+    if(UF.isDefined(this.props.color)){
+      _color = this.props.color;
+    }
       return (
           <InputGroup size="sm" className="mb-3 btn-group-sm inBox">
               <InputGroup.Prepend>
                   <InputGroup.Text className="logName">{this.props.title}</InputGroup.Text>
               </InputGroup.Prepend>
               <FormControl
+              style={{backgroundColor:_color}}
               placeholder={this.props.placeholder}
               aria-label={this.props.title}
               aria-describedby="basic-addon2"
@@ -500,6 +560,7 @@ class InputWithSubmit extends Component {
       )
   }
 }
+
 
 
 export default App;

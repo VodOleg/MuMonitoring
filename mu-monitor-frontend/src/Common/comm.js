@@ -32,7 +32,21 @@ class BE_Comm{
             'SessionKey':SessionKey,
             'Email':email
         }
-        this.send_request('/registerEmail',body);
+        let res = await this.send_request('/registerEmail',body);
+        if(this.processResponse(res)){
+            return res.data.payload;
+        }
+        return res;
+    }
+
+    async notifyMailVerified(SessionName,SessionKey,email){
+        let body={
+            'SessionName':SessionName,
+            'SessionKey':SessionKey,
+            'Email':email
+        }
+        let res = await this.send_request('/verifyAndRegister',body);
+        return res;
     }
     
     async resetNotification(SessionName, SessionKey, processID){

@@ -44,22 +44,58 @@ FE_router.post('/login', (req,res)=>{
 })
 
 FE_router.post('/registerEmail', (req,res)=>{
+    BE.logEvent("registerEmail");
     try{
      if (UtilityFunctions.isDefined(req.body) 
      && UtilityFunctions.isDefined(req.body.SessionName)
      && UtilityFunctions.isDefined(req.body.SessionKey)
      && UtilityFunctions.isDefined(req.body.Email))
      {
-         BE.registerEmailForNotifications(req.body.SessionName, req.body.SessionKey, req.body.Email);
+         BE.registerEmailForNotifications(req.body.SessionName, req.body.SessionKey, req.body.Email).then((emailObj)=>{
+             res.status(200).json({response:true, payload:emailObj});
+         });
+     }else{
+         res.status(401).json({response:false});;
      }
-     res.status(200).json({response:true});;
     }catch(exc){
         res.status(401).json({response:false});;
     }
     
 });
 
+FE_router.post('/verifyAndRegister', (req,res)=>{
+    BE.logEvent("verifyAndRegister");
+    try{
+        if (UtilityFunctions.isDefined(req.body) 
+        && UtilityFunctions.isDefined(req.body.SessionName)
+        && UtilityFunctions.isDefined(req.body.SessionKey)
+        && UtilityFunctions.isDefined(req.body.Email))
+        {
+            BE.verifyAndRegister(req.body.SessionName, req.body.SessionKey, req.body.Email).then((emailObj)=>{
+                res.status(200).json({response:true, payload:emailObj});
+            });
+        }else{
+            res.status(401).json({response:false});;
+        }
+       }catch(exc){
+           res.status(401).json({response:false});;
+       }
+})
+
+FE_router.get('/remove/:email', (req,res)=>{
+    BE.logEvent("banningEmail");
+    try{
+        let email_to_remove = req.params.email;
+        BE.banEmail(email_to_remove);
+        res.write("Adding "+email_to_remove+" to discard list.");
+        res.end();
+    }catch(exc){
+        res.status(401);
+    }
+})
+
 FE_router.post('/resetNotified', (req,res)=>{
+    BE.logEvent("resetNotified");
     try{
         if (UtilityFunctions.isDefined(req.body) 
         && UtilityFunctions.isDefined(req.body.SessionName)
@@ -76,6 +112,7 @@ FE_router.post('/resetNotified', (req,res)=>{
 });
 
 FE_router.post('/getSessions', (req,res)=>{
+    BE.logEvent("getSessions");
     try{
         if (UtilityFunctions.isDefined(req.body) && UtilityFunctions.isDefined(req.body.SessionName) && UtilityFunctions.isDefined(req.body.SessionKey)){
             BE.getSessions(req.body.SessionName, req.body.SessionKey).then((success)=>{

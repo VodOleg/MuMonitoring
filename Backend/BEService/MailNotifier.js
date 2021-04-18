@@ -1,6 +1,7 @@
 
 const nodemailer = require('nodemailer');
 
+
 class MailNotifier{
     constructor(){
         this.transporter = nodemailer.createTransport({
@@ -12,9 +13,15 @@ class MailNotifier{
         })
     }
 
-    sendMail(to, subject, text){
+    async sendMail(to, subject, text){
+        const db_ = require('../config/db');
+        let emailObj = await db_.getEmail(to);
+        if (emailObj.banned){
+            return;
+        }
+
         let mailOptions = {
-            from: process.env.Email,
+            from: "MuMonitor",
             to: to,
             subject: subject,
             text: text

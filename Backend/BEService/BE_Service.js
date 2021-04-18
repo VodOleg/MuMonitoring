@@ -64,7 +64,7 @@ class MuMonitor_Be{
                         dead_clients.forEach(element => {
                             mailMessage += `\n${element.alias} (${element.processID}) was removed from MuMonitor due to inactivity.`
                         });
-                        mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}\n\n\nThis is automated mail from MuMonitor.com.`;
+                        mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}${this.renderFooterMail(dbsession.email)}`;
                         this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
                     }
 
@@ -90,7 +90,7 @@ class MuMonitor_Be{
                             if (notified){
                                 return;
                             }
-                            let note =`\nNote: you won't receive new email notifications for this client (${client.alias}) untill you issue notification reset at www.mumonitor.com.\nSession Name: ${creds.username} \nSession Key: ${creds.sessionKey}\n\n\nThis is automated mail from MuMonitor.com.`;
+                            let note =`\nNote: you won't receive new email notifications for this client (${client.alias}) untill you issue notification reset at www.mumonitor.com.\nSession Name: ${creds.username} \nSession Key: ${creds.sessionKey} ${this.renderFooterMail(dbsession.email)}`;
                             if (client.suspicious){
                                 let message = `${client.alias} (PID: ${client.processID}) having suspicious behavior.`+note; 
                                 this.mailer.sendMail(dbsession.email, `${client.alias} suspicious behavior`,message);
@@ -116,15 +116,69 @@ class MuMonitor_Be{
         this.db.updateMetrics(eventName);
     }
 
-    registerEmailForNotifications(sessionName, SessionKey, email){
-        this.logEvent("EmailRegistred");
-        this.db.registerEmail(sessionName,SessionKey,email);
+    renderFooterMail(email){
+        return `\n\n\nThis is automated mail from MuMonitor.com.\nTo remove this mail from MuMonitor mailing list www.mumonitor.com/remove/${email}`;
+    }
+
+
+    async registerEmailForNotifications(sessionName, SessionKey, new_email){
+        // first check if email exist
+        let email = await this.db.getEmail(new_email);
+            // if exist check if already verified
+        if (UtilityFunctions.isDefined(email)){
+            if(email.verified && !email.banned){
+                // if verified and not banned register to session and return the email object
+                this.db.registerEmail(sessionName,SessionKey,email.email);
+                return email;    
+            }
+            else if(!email.verified && !email.banned){
+                //email not verified but not banned
+                //generate code and send 
+                email["code"]=UtilityFunctions.generateKey(4);
+                this.mailer.sendMail(email.email,"MuMonitor Verification", `Your verification code : ${email["code"]}.${this.renderFooterMail(email.email)}`);
+                return email;
+            }else{
+                // tried to register banned email, FE to handle message
+                this.logEvent("triesToRegisterBannedEmail");
+                console.log(`tried to register banned email ${new_email}` );
+                return email;
+            }
+        }else{
+            // if not exist generate code and include in the response also append to db dont register
+            let db_email = {
+                email: new_email,
+                verified: false,
+                banned: false,
+                registeredAt: Date.now()
+            }
+            // append new object to db as we going to blend the code into this object
+            this.db.appendEmail({...db_email});
+
+            //now generate code and send to frontend and send mail
+            db_email["code"]=UtilityFunctions.generateKey(4);
+            this.mailer.sendMail(new_email,"MuMonitor Verification", `Your verification code : ${db_email["code"]}.${this.renderFooterMail(new_email)}`);
+            return db_email;
+        }
+        return null;
+    }
+
+    async verifyAndRegister(sessionName, SessionKey, new_email){
+        this.db.verifyEmail(new_email);
+        this.db.registerEmail(sessionName,SessionKey,new_email);
     }
 
     async resetNotification(SessionName, SessionKey, processID){
         this.db.resetNotification(SessionName, SessionKey, processID);
     }
     
+    banEmail(email){
+        if(UtilityFunctions.isDefined(email)){
+            if(UtilityFunctions.isNonEmptyString(email)){
+                this.db.banEmail(email);
+            }
+        }
+    }
+
     async getSessions(SessionName, SessionKey){
         let session = await this.db.getSession(SessionName,SessionKey);
         let ret = null;

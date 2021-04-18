@@ -11,6 +11,7 @@ class DB_ {
         this.conn = null;
         this.collection = {};
         this.Metrics = {};
+        this.Emails = {};
         this.MetricDocumentID = {};
         this.BackEnd = BE_;
         this.mailer = mailer_;
@@ -31,6 +32,7 @@ class DB_ {
 
                     this.collection = this.conn.collection(process.env.USER_COLLECTION);
                     this.Metrics = this.conn.collection(process.env.METRICS_COLLECTION);
+                    this.Emails = this.conn.collection("Emails");
                     this.updateMetricsID();
                 }
             })
@@ -78,6 +80,21 @@ class DB_ {
         this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OverallSessionsLoggedIn:1, OnlineSessions:1}});
         
         return sessionKey_;
+    }
+    async verifyEmail(new_email){
+        let dbreturn = await this.Emails.updateOne({email:new_email}, { $set: {verified:true}});
+    }
+
+    async getEmail(email){
+        return await this.Emails.findOne({email:email});
+    }
+
+    appendEmail(new_email){
+        this.Emails.insertOne(new_email);
+    }
+
+    banEmail(email_to_ban){
+        this.Emails.updateOne({email:email_to_ban}, { $set: {banned:true}});
     }
 
     async getSession(SessionName, SessionKey){
