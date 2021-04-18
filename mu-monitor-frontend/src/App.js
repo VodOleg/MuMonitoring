@@ -26,7 +26,7 @@ class App extends Component {
     
     this.periodicHandle = setInterval(() => {
       this.fetchData();
-    }, 1000 * 60);
+    }, 1000 * 30);
   }
   componentDidMount(){
     document.title = "MU Monitor";
@@ -62,8 +62,15 @@ class App extends Component {
 
   go_login(e){
     BE.tryLogIn(this.state.SessionName, this.state.SessionKey).then((res)=>{
-      if (res.authenticated)
-        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients, invalidSessionCredentials:false });
+      if (res.authenticated){
+        let _email = this.state.email_place_holder;
+        let _color = this.state.email_color;
+        if( UF.isDefined(res.payload.email)){
+          _email = res.payload.email;
+          _color = "#dffcc0";
+        }
+        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients,email_place_holder:_email ,email_color:_color, invalidSessionCredentials:false });
+      }
       else
         this.setState({loggedIn:res.authenticated,invalidSessionCredentials:true});
     });    

@@ -15,20 +15,25 @@ class MailNotifier{
 
     async sendMail(to, subject, text){
         const db_ = require('../config/db');
-        let emailObj = await db_.getEmail(to);
-        if (emailObj.banned){
-            return;
-        }
+        try{
+            let emailObj = await db_.getEmail(to);
+            if (emailObj.banned){
+                return;
+            }
+    
+            let mailOptions = {
+                from: "MuMonitor",
+                to: to,
+                subject: subject,
+                text: text
+            };
+            //console.log("sending mail");
+            this.transporter.sendMail(mailOptions, (dat,err)=>{
+            });
 
-        let mailOptions = {
-            from: "MuMonitor",
-            to: to,
-            subject: subject,
-            text: text
-        };
-        //console.log("sending mail");
-        this.transporter.sendMail(mailOptions, (dat,err)=>{
-        });
+        }catch(exc){
+            console.error(exc);
+        }
     }
 }
 const mailer = new MailNotifier();
