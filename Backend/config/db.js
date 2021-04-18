@@ -109,6 +109,12 @@ class DB_ {
         });
     }
 
+    registerEmail(sessionName,sessionKey,email){
+        let query = { username: sessionName, sessionKey: sessionKey };
+        let newvalues = { $set: { email:email } };
+        this.collection.updateOne(query, newvalues);
+    }
+
     updateSession(creds, clients){
         // update with new mu clients
         // update clients in different func? 

@@ -1,5 +1,6 @@
 const db_ = require('../config/db');
 const UtilityFunctions = require('./Utils');
+const mailer_ = require('./MailNotifier');
 
 class MuMonitor_Be{
     constructor(){
@@ -8,6 +9,7 @@ class MuMonitor_Be{
         this.customInit();
         this.periodicHandle;
         this.watchDogTimerSec = 60 * 60 * 1;
+        this.mailer = mailer_;
     }
 
     async customInit(){
@@ -24,16 +26,59 @@ class MuMonitor_Be{
         this.db.removeDeadSessions(this.watchDogTimerSec);
     }
 
+    async getSessionswithEmail(creds){
+        
+        let session = await this.db.getSession(creds.username,creds.sessionKey);
+        let ret = null;
+        if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.email) && UtilityFunctions.isDefined(session.muclients)){
+            ret = session;
+        }
+        return ret;
+    }
+
     updateSession(session){
         try{
             let creds = session.creds;
             let muclients = session.clients;
-            this.db.updateSession(creds,muclients);
-            
-            // TODO:
-            // Any kind of push notifications should go here...
-            //...
-            //...
+            // notification
+            this.getSessionswithEmail(creds).then((session)=>{
+                if(session.email !== null){
+                    muclients.forEach(client => {
+                        session.muclients.forEach(dbclient => {
+                            
+                            if( client.processID !== dbclient.processID){
+                                return;
+                            }    
+
+                            
+                            let notified;
+
+
+                            //check if defined
+                            notified = UtilityFunctions.isDefined(dbclient.notified);
+                            //id defined assign if it already notified
+                            if(notified){
+                                notified = dbclient.notified;
+                            }
+                            //update client
+                            client["notified"]= notified;
+                            //if already notified don't continue
+                            if (notified){
+                                return;
+                            }
+                            
+                            if (client.suspicious){
+                                this.mailer.sendMail(session.email, `${client.alias} suspicious behavior`,`${client.alias} (PID: ${client.processID}) having suspicious behavior.` );
+                                client["notified"] = true;
+                            }else if(client.disconnected){
+                                this.mailer.sendMail(email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.` );
+                                client.notified = true
+                            }
+                        });
+                    });
+                }
+                this.db.updateSession(creds,muclients);
+            });
 
         }catch(exc){
             console.log(`Exception occured when updating session\n ${exc}`);
@@ -42,6 +87,11 @@ class MuMonitor_Be{
 
     logEvent(eventName){
         this.db.updateMetrics(eventName);
+    }
+
+    registerEmailForNotifications(sessionName, SessionKey, email){
+        this.logEvent("EmailRegistred");
+        this.db.registerEmail(sessionName,SessionKey,email);
     }
     
     async getSessions(SessionName, SessionKey){

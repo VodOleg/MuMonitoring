@@ -26,6 +26,15 @@ class BE_Comm{
         return user;
     }
     
+    async registerEmail(SessionName,SessionKey,email){
+        let body={
+            'SessionName':SessionName,
+            'SessionKey':SessionKey,
+            'Email':email
+        }
+        this.send_request('/registerEmail',body);
+    }
+
     async getSessions(SessionName, SessionKey){
         let body={
             'SessionName':SessionName,

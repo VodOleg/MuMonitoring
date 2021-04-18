@@ -1,7 +1,7 @@
 import './App.css';
 import React, { Component } from 'react';
 import Wrap from './Common/Wrap';
-import {Form, Button, Alert, Modal} from 'react-bootstrap';
+import {Form, Button, Alert, Modal, InputGroup, FormControl} from 'react-bootstrap';
 import BE from './Common/comm';
 import {UtilityFunctions as UF} from './Common/Utils';
 import logo from './logo_main.png';
@@ -15,7 +15,8 @@ class App extends Component {
       loggedIn: false,
       invalidSessionCredentials:false,
       clients: [],
-      showTos:false
+      showTos:false,
+      showEmailConfirm:false
     }
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
@@ -121,6 +122,23 @@ renderFailureMessage(){
   return ele;
 }
 
+confirmationClose(){
+  this.setState({showEmailConfirm:false});
+}
+
+renderEmailModal(){
+  let ele = <Wrap>
+    <SimpleMessageModal onClose={this.confirmationClose.bind(this)}>
+      Update mail for this session.<br />
+      Please note:<br />
+      - You will receive one email per client event.<br />
+      - Yor email will be removed from the service when the session is closed. <br />
+      - Email might be filtered to spam box. 
+    </SimpleMessageModal>
+  </Wrap>
+  return ele;
+}
+
 renderToS(){
   let ele = <Wrap>
     <SimpleMessageModal onClose={this.tosClosed.bind(this)}>
@@ -205,6 +223,13 @@ tosClosed(){
   })
 }
 
+registerEmail(item){
+  BE.registerEmail(this.state.SessionName,this.state.SessionKey,item.value);
+  this.setState({
+    showEmailConfirm:true
+  });
+}
+
 renderGeneral(){
   let ele = <Wrap>
     <div className="general-content">
@@ -248,9 +273,22 @@ renderGeneral(){
 
       </Wrap>
       :
+      <Wrap>
+        <div style={{width:"500px", margin:"20px auto"}}>
+          <InputWithSubmit 
+          value="" 
+          type="email" 
+          placeholder="your email for notifications" 
+          title="Email" 
+          applyCB={this.registerEmail.bind(this)} />
+
+        </div>
+
+          {this.state.showEmailConfirm ? this.renderEmailModal(): null}
       <div className="dataWrapper">
         {this.renderData()}       
       </div>  
+      </Wrap>
     }
     {
     }
@@ -393,6 +431,42 @@ class SimpleMessageModal extends Component {
                   </Modal.Footer>
               </Modal>
           </div>
+      )
+  }
+}
+
+class InputWithSubmit extends Component {
+    
+  constructor(props){
+      super(props);
+      this.textInput = React.createRef();
+  }
+
+  handleApply(e){
+      let data = {
+          key: this.props.title,
+          value: this.textInput.current.value
+      };
+      this.props.applyCB(data);
+  }
+
+  render() {
+      return (
+          <InputGroup size="sm" className="mb-3 btn-group-sm inBox">
+              <InputGroup.Prepend>
+                  <InputGroup.Text className="logName">{this.props.title}</InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl
+              placeholder={this.props.placeholder}
+              aria-label={this.props.title}
+              aria-describedby="basic-addon2"
+              ref={this.textInput}
+              type={this.props.type}
+              />
+              <InputGroup.Append>
+              <Button variant="outline-secondary" onClick={(e)=>{this.handleApply(e)}}>Apply</Button>
+              </InputGroup.Append>
+          </InputGroup>
       )
   }
 }

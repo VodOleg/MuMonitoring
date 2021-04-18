@@ -8,3 +8,4 @@ Backend/.vscode
 ToDeploy/Backend
 *.pem
 ToDeploy
+Backend/config/config.env
