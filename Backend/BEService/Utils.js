@@ -43,6 +43,16 @@ const UtilityFunctions = {
             key += Math.floor(Math.random() * 10).toString();
         }
         return key;
+    },
+    /**
+     * @description Searches for @targetObj in @SourceArray comparing with @ComparisonProperty
+     * @returns @targetObj from the @SourceArray if found else returns undefined
+     */
+    getEqivelent: ( SourceArray , targetObj, ComparisonProperty) => {
+        var result = SourceArray.find(obj =>{
+            return obj[ComparisonProperty] === targetObj[ComparisonProperty];
+        });
+        return result;
     }
 
 }

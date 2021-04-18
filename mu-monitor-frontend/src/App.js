@@ -34,8 +34,19 @@ class App extends Component {
     if (this.state.loggedIn){
       BE.getSessions(this.state.SessionName, this.state.SessionKey).then((sessions)=>{
         //update state
-        let email = UF.isDefined(sessions.email) ? sessions.email : "your email for notifications";
-        this.setState({clients:sessions.muclients, email:email})
+        let loggedIn = UF.isDefined(sessions);
+        if ( loggedIn){
+          loggedIn = UF.isDefined(sessions.username) && UF.isDefined(sessions.sessionKey);
+        }
+        if (loggedIn){
+          loggedIn = UF.isNonEmptyString(sessions.username) && UF.isNonEmptyString(sessions.sessionKey);
+        }
+        if (loggedIn){
+          let email = UF.isDefined(sessions.email) ? sessions.email : "your email for notifications";
+          this.setState({clients:sessions.muclients, email:email})
+        }else{
+          this.setState({loggedIn:false})
+        }
       })
     }
   }
@@ -98,23 +109,30 @@ renderData(){
   let ad_key = 0;
   uiClients.push(<Ad key={"ad_"+ad_key}>This ad could be yours!</Ad>)
   ad_index++;
-  this.state.clients.forEach(client => {
-    let key_= "ui_item_of_"+client.processID;
-    uiClients.push(
-      <ProcessUI data={client} key={key_} name={key_} resetNotificationCB={this.resetNotificationHandle.bind(this)}/>     
-      )
-      if(ad_index % 5 === 0){
-        ad_index = 1;
-        ad_key++;
-        uiClients.push(<Ad key={"ad_"+ad_key}>This ad could be yours!</Ad>)
-    }else{
-      ad_index++;
-    }
-  });
   if (this.state.clients.length === 0){
     uiClients.push(
+      <Wrap key="no processes message wrap">
+      <br />
       <h6 key="noprocesses message">No Processes to present.</h6>
+    </Wrap>
     )
+  }else{
+    try{
+      this.state.clients.forEach(client => {
+        let key_= "ui_item_of_"+client.processID;
+        uiClients.push(
+          <ProcessUI data={client} key={key_} name={key_} resetNotificationCB={this.resetNotificationHandle.bind(this)}/>     
+          )
+          if(ad_index % 5 === 0){
+            ad_index = 1;
+            ad_key++;
+            uiClients.push(<Ad key={"ad_"+ad_key}>This ad could be yours!</Ad>)
+        }else{
+          ad_index++;
+        }
+      });
+    }catch(exc){
+    }
   }
 
   let ele = <Wrap>
@@ -212,7 +230,7 @@ renderToS(){
 renderFooter(){
   let ele = <Wrap>
     <footer className="footer-continer">  
-    For business and feature request inquaries, please reach out to mumonitor.com@gmail.com<br />
+    For business and feature request inquiries, please reach out to mumonitor.com@gmail.com<br />
     @Copyright OlegVod 2021- All Right Reserved.   
     </footer>
   </Wrap>

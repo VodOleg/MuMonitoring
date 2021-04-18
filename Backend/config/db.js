@@ -1,5 +1,8 @@
 const mongodb = require('mongodb');
 const UF = require('../BEService/Utils');
+const BE_ = require('../BEService/BE_Service');
+const mailer_ = require('../BEService/MailNotifier');
+const UtilityFunctions = require("../BEService/Utils");
 
 class DB_ {
     constructor(db_URI, db_name){
@@ -9,6 +12,8 @@ class DB_ {
         this.collection = {};
         this.Metrics = {};
         this.MetricDocumentID = {};
+        this.BackEnd = BE_;
+        this.mailer = mailer_;
     }
 
     async connectDB(db_URI,db_name){
@@ -67,9 +72,7 @@ class DB_ {
         this.collection.insertOne({
             username:username,
             sessionKey:sessionKey_,
-            muclients:{
-
-            }
+            muclients:[]
         }
         )
         this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OverallSessionsLoggedIn:1, OnlineSessions:1}});
@@ -88,6 +91,17 @@ class DB_ {
         this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : attribute});
     }
 
+    async notifySessionClosed(session){
+        try{
+            if (UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.email)){
+                let note =`${session.username} is removed from MuMonitor.\nLast Updated: ${new Date(session.lastupdated).toLocaleString()}.\nNote: The whole session data was removed from service.\n\n\nThis is automated mail from MuMonitor.com.`;
+                this.mailer.sendMail(session.email, `${session.username} monitor closed`, note);
+            }
+        }catch(exc){
+            console.error(`Exception trying to notify about session close\n${exc}`);
+        }
+    }
+
     //get all sessions from db and remove sessions that werent update in the past watchDogTimerSec
     async removeDeadSessions(timeoutSeconds){
         let sessions = await this.collection.find({}).toArray();
@@ -104,7 +118,7 @@ class DB_ {
             if (shouldDelete){
                 this.collection.deleteOne({_id: new mongodb.ObjectID(session._id)});
                 this.Metrics.updateOne({_id:this.MetricDocumentID}, {$inc : {OnlineSessions:-1}});
-
+                this.notifySessionClosed(session);
             }
         });
     }
@@ -112,7 +126,7 @@ class DB_ {
     async resetNotification(SessionName, SessionKey, processID){
         let query = {username: SessionName, sessionKey: SessionKey, "muclients.processID":processID};
         let newvalues = { $set: {"muclients.$.notified":false}};
-        this.collection.update(query,newvalues);
+        this.collection.updateOne(query,newvalues);
     }
 
     registerEmail(sessionName,sessionKey,email){

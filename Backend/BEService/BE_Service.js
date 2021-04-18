@@ -36,15 +36,40 @@ class MuMonitor_Be{
         return ret;
     }
 
+    getDeadClients(dbclients, clients){
+        let ret = [];
+        try{
+            dbclients.forEach(dbclient => {
+                if (!UtilityFunctions.isDefined(UtilityFunctions.getEqivelent(clients,dbclient,"processID"))){
+                    ret.push(dbclient);
+                    return;
+                }
+            });
+        }catch(exc){
+            console.error(`Exception occured while filtering dbclients and clients for notify\n${exc}`);
+        }
+        return ret;
+    }
+
     updateSession(session){
         try{
             let creds = session.creds;
             let muclients = session.clients;
             // notification
-            this.getSessionswithEmail(creds).then((session)=>{
-                if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.email)){
+            this.getSessionswithEmail(creds).then((dbsession)=>{
+                if(UtilityFunctions.isDefined(dbsession) && UtilityFunctions.isDefined(dbsession.email)){
+                    if (muclients.length !== dbsession.muclients.length){
+                        let dead_clients = this.getDeadClients(dbsession.muclients , muclients);
+                        let mailMessage = "";
+                        dead_clients.forEach(element => {
+                            mailMessage += `\n${element.alias} (${element.processID}) was removed from MuMonitor due to inactivity.`
+                        });
+                        mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}\n\n\nThis is automated mail from MuMonitor.com.`;
+                        this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
+                    }
+
                     muclients.forEach(client => {
-                        session.muclients.forEach(dbclient => {
+                        dbsession.muclients.forEach(dbclient => {
                             
                             if( client.processID !== dbclient.processID){
                                 return;
@@ -65,13 +90,13 @@ class MuMonitor_Be{
                             if (notified){
                                 return;
                             }
-                            let note =`\n Note: you won't receive new email notifications for this client untill you issue notification reset notification in the web (www.mumonitor.com).\n Session Name: ${creds.username} \nSession Key: ${creds.sessionKey}`;
+                            let note =`\nNote: you won't receive new email notifications for this client (${client.alias}) untill you issue notification reset at www.mumonitor.com.\nSession Name: ${creds.username} \nSession Key: ${creds.sessionKey}\n\n\nThis is automated mail from MuMonitor.com.`;
                             if (client.suspicious){
                                 let message = `${client.alias} (PID: ${client.processID}) having suspicious behavior.`+note; 
-                                this.mailer.sendMail(session.email, `${client.alias} suspicious behavior`,message);
+                                this.mailer.sendMail(dbsession.email, `${client.alias} suspicious behavior`,message);
                                 client["notified"] = true;
                             }else if(client.disconnected){
-                                this.mailer.sendMail(email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.`+note );
+                                this.mailer.sendMail(dbsession.email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.`+note );
                                 client.notified = true
                             }
                         });
@@ -84,6 +109,8 @@ class MuMonitor_Be{
             console.log(`Exception occured when updating session\n ${exc}`);
         }
     }
+
+
 
     logEvent(eventName){
         this.db.updateMetrics(eventName);
