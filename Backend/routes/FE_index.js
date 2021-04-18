@@ -53,10 +53,26 @@ FE_router.post('/registerEmail', (req,res)=>{
          BE.registerEmailForNotifications(req.body.SessionName, req.body.SessionKey, req.body.Email);
      }
      res.status(200).json({response:true});;
- }catch(exc){
-    res.status(401).json({response:false});;
- }
+    }catch(exc){
+        res.status(401).json({response:false});;
+    }
+    
+});
 
+FE_router.post('/resetNotified', (req,res)=>{
+    try{
+        if (UtilityFunctions.isDefined(req.body) 
+        && UtilityFunctions.isDefined(req.body.SessionName)
+        && UtilityFunctions.isDefined(req.body.SessionKey)
+        && UtilityFunctions.isDefined(req.body.processID))
+        {
+            BE.resetNotification(req.body.SessionName, req.body.SessionKey, req.body.processID);
+            res.status(200).json({response:true});
+        }
+
+    }catch(exc){
+        res.status(401).json({response:false});;
+    }
 });
 
 FE_router.post('/getSessions', (req,res)=>{
@@ -65,7 +81,7 @@ FE_router.post('/getSessions', (req,res)=>{
             BE.getSessions(req.body.SessionName, req.body.SessionKey).then((success)=>{
                 let bodyresponse = {};
                 if (UtilityFunctions.isDefined(success)){
-                    bodyresponse = {response:true , payload: UtilityFunctions.isDefined(success.muclients) ? success.muclients : null};
+                    bodyresponse = {response:true , payload: UtilityFunctions.isDefined(success.muclients) ? success : null};
                 }else{
                     bodyresponse = {response:false, payload:null}
                 }

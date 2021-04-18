@@ -109,6 +109,12 @@ class DB_ {
         });
     }
 
+    async resetNotification(SessionName, SessionKey, processID){
+        let query = {username: SessionName, sessionKey: SessionKey, "muclients.processID":processID};
+        let newvalues = { $set: {"muclients.$.notified":false}};
+        this.collection.update(query,newvalues);
+    }
+
     registerEmail(sessionName,sessionKey,email){
         let query = { username: sessionName, sessionKey: sessionKey };
         let newvalues = { $set: { email:email } };

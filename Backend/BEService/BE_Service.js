@@ -30,7 +30,7 @@ class MuMonitor_Be{
         
         let session = await this.db.getSession(creds.username,creds.sessionKey);
         let ret = null;
-        if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.email) && UtilityFunctions.isDefined(session.muclients)){
+        if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.muclients)){
             ret = session;
         }
         return ret;
@@ -42,7 +42,7 @@ class MuMonitor_Be{
             let muclients = session.clients;
             // notification
             this.getSessionswithEmail(creds).then((session)=>{
-                if(session.email !== null){
+                if(UtilityFunctions.isDefined(session) && UtilityFunctions.isDefined(session.email)){
                     muclients.forEach(client => {
                         session.muclients.forEach(dbclient => {
                             
@@ -50,7 +50,6 @@ class MuMonitor_Be{
                                 return;
                             }    
 
-                            
                             let notified;
 
 
@@ -66,12 +65,13 @@ class MuMonitor_Be{
                             if (notified){
                                 return;
                             }
-                            
+                            let note =`\n Note: you won't receive new email notifications for this client untill you issue notification reset notification in the web (www.mumonitor.com).\n Session Name: ${creds.username} \nSession Key: ${creds.sessionKey}`;
                             if (client.suspicious){
-                                this.mailer.sendMail(session.email, `${client.alias} suspicious behavior`,`${client.alias} (PID: ${client.processID}) having suspicious behavior.` );
+                                let message = `${client.alias} (PID: ${client.processID}) having suspicious behavior.`+note; 
+                                this.mailer.sendMail(session.email, `${client.alias} suspicious behavior`,message);
                                 client["notified"] = true;
                             }else if(client.disconnected){
-                                this.mailer.sendMail(email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.` );
+                                this.mailer.sendMail(email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.`+note );
                                 client.notified = true
                             }
                         });
@@ -92,6 +92,10 @@ class MuMonitor_Be{
     registerEmailForNotifications(sessionName, SessionKey, email){
         this.logEvent("EmailRegistred");
         this.db.registerEmail(sessionName,SessionKey,email);
+    }
+
+    async resetNotification(SessionName, SessionKey, processID){
+        this.db.resetNotification(SessionName, SessionKey, processID);
     }
     
     async getSessions(SessionName, SessionKey){

@@ -16,7 +16,8 @@ class App extends Component {
       invalidSessionCredentials:false,
       clients: [],
       showTos:false,
-      showEmailConfirm:false
+      showEmailConfirm:false,
+      email:"your email for notifications"
     }
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
@@ -33,7 +34,8 @@ class App extends Component {
     if (this.state.loggedIn){
       BE.getSessions(this.state.SessionName, this.state.SessionKey).then((sessions)=>{
         //update state
-        this.setState({clients:sessions})
+        let email = UF.isDefined(sessions.email) ? sessions.email : "your email for notifications";
+        this.setState({clients:sessions.muclients, email:email})
       })
     }
   }
@@ -82,6 +84,14 @@ class App extends Component {
     return ele;
 }
 
+resetNotificationHandle(processID){
+  BE.resetNotification(this.state.SessionName, this.state.SessionKey, processID).then((response)=>{
+    if (response){
+      this.fetchData();
+    }
+  })
+}
+
 renderData(){
   let uiClients = []
   let ad_index = 0;
@@ -91,7 +101,7 @@ renderData(){
   this.state.clients.forEach(client => {
     let key_= "ui_item_of_"+client.processID;
     uiClients.push(
-      <ProcessUI data={client} key={key_} name={key_}/>     
+      <ProcessUI data={client} key={key_} name={key_} resetNotificationCB={this.resetNotificationHandle.bind(this)}/>     
       )
       if(ad_index % 5 === 0){
         ad_index = 1;
@@ -274,11 +284,11 @@ renderGeneral(){
       </Wrap>
       :
       <Wrap>
-        <div style={{width:"500px", margin:"20px auto"}}>
+        <div style={{width:window.screen.availWidth < 500 ? window.screen.availWidth - 40 : 500, margin:"20px auto"}}>
           <InputWithSubmit 
           value="" 
           type="email" 
-          placeholder="your email for notifications" 
+          placeholder={this.state.email} 
           title="Email" 
           applyCB={this.registerEmail.bind(this)} />
 
@@ -313,7 +323,8 @@ class ProcessUI extends Component {
         alias: UF.isDefined(this.props.data) ? this.props.data.alias : "",
         disconnected: UF.isDefined(this.props.data) ? this.props.data.disconnected : false,
         suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicious : false,
-        timestamp: d
+        timestamp: d,
+        notified: UF.isDefined(this.props.data) ? this.props.data.notified : false
       }
       
       let variant = "success";
@@ -328,24 +339,25 @@ class ProcessUI extends Component {
       }
       let screenWidth = window.screen.availWidth;
       let width_ = (screenWidth - 80*4 )/4  ;
-      let style_ = {width: width_, margin:"3% 0% 0 20px", float:"left"};
+      let style_ = {width: width_, margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
       if (width_ < 300){
-        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
       }
       if( width_ < 200 ){
-        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        style_ = {width: "300px", margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
         
       }
       
       if( width_ < 100 ){
-        style_ = {width: "300", margin:"3% auto", display:"block"}
+        style_ = {width: "300", margin:"3% auto", display:"block",minHeight:"200px"}
       }
 
       let ele = <Wrap > 
         <Alert style={style_} variant={variant}>
-        <Alert.Heading>{state.alias} ({state.processID})  </Alert.Heading>
+        <Alert.Heading>{state.alias} ({state.processID}) </Alert.Heading>
         <p>
           {message}
+          {state.notified ? <Wrap><br /><span style={{color:"red", fontSize:"small"}}>notified by email.</span> <Button onClick={(e)=>{this.props.resetNotificationCB(state.processID)}} title="Reset notification." variant="outline-secondary" size="sm" className="reset-notification"><i className="fa fa-refresh fa-spin" style={{fontSize:"12px"}}></i></Button></Wrap> : null}
         </p>
         <hr />
         <p className="mb-0">
@@ -367,15 +379,15 @@ class Ad extends Component {
       
       let screenWidth = window.screen.availWidth;
       let width_ = (screenWidth - 80*4 )/4  ;
-      let style_ = {borderColor:"lightgrey" ,width: width_, margin:"3% 0% 0 20px", float:"left"};
+      let style_ = {borderColor:"lightgrey" ,width: width_, margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
       if (width_ < 300){
-        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
       }
       if( width_ < 200 ){
-        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left"};
+        style_ = {borderColor:"lightgrey" ,width: "300px", margin:"3% 0% 0 20px", float:"left",minHeight:"200px"};
       }
       if( width_ < 100 ){
-        style_ = {borderColor:"lightgrey" ,width: "300", margin:"3% auto", display:"block"}
+        style_ = {borderColor:"lightgrey" ,width: "300", margin:"3% auto", display:"block",minHeight:"200px"}
       }
       
 

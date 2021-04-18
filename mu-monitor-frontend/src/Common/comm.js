@@ -34,6 +34,16 @@ class BE_Comm{
         }
         this.send_request('/registerEmail',body);
     }
+    
+    async resetNotification(SessionName, SessionKey, processID){
+        let body={
+            'SessionName':SessionName,
+            'SessionKey':SessionKey,
+            'processID':processID
+        }
+        let res = await this.send_request('/resetNotified',body);
+        return res;
+    }
 
     async getSessions(SessionName, SessionKey){
         let body={

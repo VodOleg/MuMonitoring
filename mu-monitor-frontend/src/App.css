@@ -21,6 +21,10 @@
   overflow-y: auto;
 }
 
+.reset-notification{
+  padding:0 2px !important;
+}
+
 .logo-container{
   max-width: fit-content;
   text-align: center;
