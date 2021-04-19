@@ -260,7 +260,7 @@ renderToS(){
 
 <p>Any claim related to olegvod's Website shall be governed by the laws of il without regards to its conflict of law provisions.</p>
   </div>
-<a href="https://github.com/VodOleg/MuMonitoring/releases/download/1.0/MuMonitor.zip">Agree and Download</a>
+<a href="https://github.com/VodOleg/MuMonitoring/releases/download/1.1/MuMonitor.zip">Agree and Download</a>
 </SimpleMessageModal>
 
   </Wrap>

@@ -51,10 +51,27 @@ class MuMonitor_Be{
         return ret;
     }
 
+    translateClienttoBE(muclients){
+        let newclients = [];
+        
+        for(let i in muclients){
+          let selectedItemFromList = muclients[i][muclients[i].length-1]; // last item
+          
+          for(let j = muclients[i].length-1; j >= 0; j-- ){
+            if( muclients[i][j].suspicious ){
+              selectedItemFromList = muclients[i][j];
+              break;
+            }
+          }
+          newclients.push(selectedItemFromList);
+        }
+        return newclients;
+      }
+
     updateSession(session){
         try{
             let creds = session.creds;
-            let muclients = session.clients;
+            let muclients = this.translateClienttoBE(session.clients);
             // notification
             this.getSessionswithEmail(creds).then((dbsession)=>{
                 if(UtilityFunctions.isDefined(dbsession) && UtilityFunctions.isDefined(dbsession.email)){
@@ -64,8 +81,10 @@ class MuMonitor_Be{
                         dead_clients.forEach(element => {
                             mailMessage += `\n${element.alias} (${element.processID}) was removed from MuMonitor due to inactivity.`
                         });
-                        mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}${this.renderFooterMail(dbsession.email)}`;
-                        this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
+                        if (dead_clients.length > 0 ){
+                            mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}${this.renderFooterMail(dbsession.email)}`;
+                            this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
+                        }
                     }
 
                     muclients.forEach(client => {

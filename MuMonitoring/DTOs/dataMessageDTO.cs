@@ -9,6 +9,6 @@ namespace MuMonitoring.DTOs
     public class dataMessageDTO
     {
         public Credentials creds { get; set; }
-        public List<ClientProcessDTO> clients { get; set; }
+        public Dictionary<int, List<ClientProcessDTO>> clients { get; set; }
     }
 }

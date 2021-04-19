@@ -123,23 +123,20 @@ namespace MuMonitoring
             return res_;
         }
 
-        public static async Task<bool> sendDataToBE()
+        public static void sendDataToBE()
         {
             try
             {
-                dataMessageDTO msg = new dataMessageDTO();
-                msg.creds = StateManager.m_creds;
-                msg.clients = StateManager.getData();
-                string seriliazed = JsonConvert.SerializeObject(msg);
+                string seriliazed = StateManager.getSerializedData();  
                 var httpContent = new StringContent(seriliazed, Encoding.UTF8, "application/json");
 
-                sendPost(BackendURL + m_Const_updateSession, httpContent);
-            }catch(Exception exc)
+                m_client.PostAsync(BackendURL + m_Const_updateSession, httpContent);
+            }
+            catch(Exception exc)
             {
                 Log.Write($"Exception occured when sending data");
                 Log.Write($"{ exc.Message} \n {exc.StackTrace}");
             }
-            return true;
         }
     }
 }
