@@ -23,7 +23,9 @@ class MuMonitor_Be{
 
     periodicTasks(){
         //watch dog
-
+        this.db.getClientConfiguration().then((data)=>{
+            this.clientsConfig = data;
+        });
         this.db.removeDeadSessions(this.watchDogTimerSec);
     }
 
@@ -197,6 +199,11 @@ class MuMonitor_Be{
                 this.db.banEmail(email);
             }
         }
+    }
+
+    getDownloadLink(){
+        let clientLink = this.clientsConfig.ClientsConfig.ClientLink;
+        return clientLink;
     }
 
     async getSessions(SessionName, SessionKey){

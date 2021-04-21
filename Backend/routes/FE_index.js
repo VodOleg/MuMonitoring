@@ -55,13 +55,23 @@ FE_router.post('/registerEmail', (req,res)=>{
              res.status(200).json({response:true, payload:emailObj});
          });
      }else{
-         res.status(401).json({response:false});;
+         res.status(401).json({response:false});
      }
     }catch(exc){
-        res.status(401).json({response:false});;
+        res.status(401).json({response:false});
     }
     
 });
+
+FE_router.get('/clientDownloadLink', (req,res)=>{
+    try{
+        BE.logEvent('clientDownloadLink');
+        let link = BE.getDownloadLink();
+        res.status(200).json({response:true,link:link});
+    }catch(exc){
+        res.status(401).json({response:false});
+    }
+})
 
 FE_router.post('/verifyAndRegister', (req,res)=>{
     BE.logEvent("verifyAndRegister");

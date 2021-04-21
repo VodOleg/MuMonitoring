@@ -25,6 +25,15 @@ class BE_Comm{
         user.payload = res.data.payload;
         return user;
     }
+
+    async getLatestClientLink(){
+        let ret = await this.send_request('/clientDownloadLink', {},"get");
+        let response = "";
+        if (this.processResponse(ret)){
+            response = ret.data.link;
+        }
+        return response;
+    }
     
     async registerEmail(SessionName,SessionKey,email){
         let body={

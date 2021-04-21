@@ -21,6 +21,11 @@ class App extends Component {
       email_place_holder:"your email for notifications",
       email_color: "white"
     }
+    this.clientLink ="";
+
+    BE.getLatestClientLink().then((link)=>{
+      this.clientLink=link;
+    });
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
     
@@ -261,7 +266,7 @@ renderToS(){
 
 <p>Any claim related to olegvod's Website shall be governed by the laws of il without regards to its conflict of law provisions.</p>
   </div>
-<a href="https://github.com/VodOleg/MuMonitoring/releases/download/1.1/MuMonitor.zip">Agree and Download</a>
+<a href={this.clientLink}>Agree and Download</a>
 </SimpleMessageModal>
 
   </Wrap>
