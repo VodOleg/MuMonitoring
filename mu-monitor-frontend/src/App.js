@@ -24,6 +24,7 @@ class App extends Component {
     this.SessionNameChanged = this.SessionNameChanged.bind(this);
     this.SessionKeyChanged = this.SessionKeyChanged.bind(this);
     
+    this.fetchData();
     this.periodicHandle = setInterval(() => {
       this.fetchData();
     }, 1000 * 30);

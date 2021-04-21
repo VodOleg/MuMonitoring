@@ -112,9 +112,11 @@ namespace MuMonitoring
             }
         }
 
-        private void startClient()
-        {
+        private void startClient() { 
+            //make initial routine here to update web ASAP
             refreshProcesses();
+            m_pMonitor.analyzeData();
+            BackendCom.sendDataToBE();
 
             m_Timers["UIRefresh"] = new System.Timers.Timer(StateManager.m_config.ClientRefreshTimeSec * 1000);
             m_Timers["UIRefresh"].Elapsed += (Object source, ElapsedEventArgs e) => { this.refreshProcesses(); };
@@ -181,6 +183,7 @@ namespace MuMonitoring
             Utils.newLogMessage += new EventHandler(logRequested);
             changeVersionInTitle();
             BackendCom.Init();
+
         }
 
         private void ExitBtn_Click(object sender, RoutedEventArgs e)

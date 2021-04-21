@@ -11,7 +11,8 @@ namespace MuMonitoring
 {
     static class BackendCom
     { 
-        private static string BackendURL = "http://127.0.0.1:3000";
+        private static string BackendURL = "http://ec2-18-156-107-188.eu-central-1.compute.amazonaws.com:3000";
+        //private static string BackendURL = "http://127.0.0.1:3000";
 
         private static HttpClient m_client;
 
@@ -39,17 +40,9 @@ namespace MuMonitoring
                 System.Windows.Application.Current.Shutdown();
             }
 
-            // Get current version
-            
-
             if (isConnected())
             {
                 return true;
-            }
-            string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            if (!userName.ToLower().Contains("ovod"))
-            {
-                BackendURL = "http://ec2-18-156-107-188.eu-central-1.compute.amazonaws.com:3000";
             }
 
             m_client = new HttpClient();
