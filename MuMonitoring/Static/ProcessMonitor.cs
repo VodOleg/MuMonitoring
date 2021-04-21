@@ -13,10 +13,10 @@ namespace MuMonitoring.Static
 
        
 
-        public void publishActiveProcesses()
+        public bool publishActiveProcesses()
         {
             Process[] localAll = Process.GetProcessesByName(StateManager.m_config.ProcessName);
-
+            bool monitoredProcessesChanged = false;
 
             lock (StateManager.monitoredProcessesMutex)
             {
@@ -41,6 +41,8 @@ namespace MuMonitoring.Static
                         ETWwrapper.removeProcess(monitored_process.process.Id);
 
                         StateManager.monitored_processes.Remove(monitored_process);
+
+                        monitoredProcessesChanged = true;
                     }
                 }
 
@@ -74,9 +76,12 @@ namespace MuMonitoring.Static
 
                     //sort the monitored processes according to their start time
                     StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
+
+                    monitoredProcessesChanged = true;
                 }
 
             }
+            return monitoredProcessesChanged;
         }
 
         public void analyzeData()

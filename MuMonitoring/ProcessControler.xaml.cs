@@ -15,11 +15,15 @@ namespace MuMonitoring
         private P_Process p_process;
         bool monitor = true;
         bool isColored = true;
-        System.Timers.Timer m_timer;
 
         public ProcessControler()
         {
             InitializeComponent();
+        }
+
+        public void update()
+        {
+            this.changeCircleColor();
         }
 
         private void changeCircleColor() 
@@ -72,10 +76,6 @@ namespace MuMonitoring
 
             this.doMonitor.IsChecked = process.doMonitor;
 
-            //start Timer
-            m_timer = new System.Timers.Timer(1000);
-            m_timer.Elapsed += (Object source, ElapsedEventArgs e) => { this.changeCircleColor(); };
-            m_timer.Start();
         }
 
         public int getProcessID()
@@ -112,8 +112,6 @@ namespace MuMonitoring
 
         public void Dispose()
         {
-            this.m_timer.Stop();
-            this.m_timer.Dispose();
             p_process = null;
         }
     }

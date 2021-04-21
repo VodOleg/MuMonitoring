@@ -51,6 +51,9 @@ namespace MuMonitoring
 
         private void renderProcessUC()
         {
+            // TODO: only re render processes when something changed
+            // TODO: Set single timer for all the circles
+            // potential memory leak here
             this.Dispatcher.Invoke(() => {
                 foreach(var item in mainContainer.Children)
                 {
@@ -72,7 +75,7 @@ namespace MuMonitoring
                 }
                 mainContainer.Children.Clear();
                 m_monitoredProcessesUC.Clear();
-                var as1 = GC.GetTotalMemory(true);
+
                 ScrollViewer sv = new ScrollViewer();
                 StackPanel sp = new StackPanel();
                 sv.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -93,9 +96,20 @@ namespace MuMonitoring
 
         private void refreshProcesses()
         {
-            m_pMonitor.publishActiveProcesses();
-            
-            renderProcessUC();
+            bool processesChanged = m_pMonitor.publishActiveProcesses();
+
+            if (processesChanged)
+            {
+                renderProcessUC();
+            }
+        }
+
+        private void UCupdater()
+        {
+            foreach(var uc_ in m_monitoredProcessesUC)
+            {
+                uc_.update();
+            }
         }
 
         private void startClient()
@@ -111,7 +125,10 @@ namespace MuMonitoring
             m_Timers["KeepAlive"] = new System.Timers.Timer(StateManager.m_config.KeepAliveTimeSec * 1000);
             m_Timers["KeepAlive"].Elapsed += (Object source, ElapsedEventArgs e) => { BackendCom.sendDataToBE(); };
 
-            foreach(var timer_ in m_Timers)
+            m_Timers["UCupdater"] = new System.Timers.Timer(1000);
+            m_Timers["UCupdater"].Elapsed += (Object source, ElapsedEventArgs e) => { this.UCupdater(); };
+
+            foreach (var timer_ in m_Timers)
             {
                 timer_.Value.Start();
             }
