@@ -1,6 +1,7 @@
 const db_ = require('../config/db');
 const UtilityFunctions = require('./Utils');
 const mailer_ = require('./MailNotifier');
+const semver_ = require('semver');
 
 class MuMonitor_Be{
     constructor(){
@@ -208,14 +209,32 @@ class MuMonitor_Be{
     }
     
     validateSessionName(username){
+        //session name check
         let mat = username.match("^[A-Za-z0-9]+$") ;
         let len =  username.length <= 20 && username.length >= 3;
-        return len && mat!==null;
+        let sessionNameValid = len && mat!==null;
+        return sessionNameValid;
     }
 
-    async userAuth(username){
+    validateClientVersion(clientVersion){
+        // version check
+        let clientTrimmed = clientVersion.substring(0, clientVersion.lastIndexOf("."));
+        let versionValid = semver_.gt(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion) ||
+                            semver_.eq(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion);
+        return versionValid;
+    }
+
+    async userAuth(body){
         //check if valid session name
         let resObject;
+        let username = "";
+        let clientVersion = "1.0.0.0";
+        if(UtilityFunctions.checkNested(body,"username")){
+            username = body.username;
+        }
+        if(UtilityFunctions.checkNested(body,"clientVersion")){
+            clientVersion = body.clientVersion;
+        }
         let validSessionName = this.validateSessionName(username);
         if (!validSessionName){
             resObject = {
@@ -225,7 +244,14 @@ class MuMonitor_Be{
             }
             return resObject;   
         }
-
+        if(!this.validateClientVersion(clientVersion)){
+            resObject = {
+                success:false,
+                message:"Newer client version is availble, please download from the website.",
+                data: null
+            }
+            return resObject;   
+        }
         //check if user already exist
         let userExist = await this.db.checkifUserExist(username);
         if (userExist){

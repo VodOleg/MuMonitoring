@@ -72,13 +72,14 @@ namespace MuMonitoring
             return resString;
         }
 
-        private static void validateVersion(Version newestVersion)
+        private static bool validateVersion(Version newestVersion)
         {
             Version currentVersion = new Version(MainWindow.m_sCurrentVersion);
             if ( currentVersion < newestVersion)
             {
                 Utils.NotifyUser("New Version Is Availble");
             }
+            return currentVersion < newestVersion;
         }
 
         public static string Authenticate(Credentials credentials)
@@ -88,6 +89,7 @@ namespace MuMonitoring
             try
             {
                 o["username"] = credentials.username;
+                o["clientVersion"] = MainWindow.m_sCurrentVersion;
                 var httpContent = new StringContent(o.ToString(), Encoding.UTF8, "application/json");
                 string res = sendPost(BackendURL+m_Const_startSession, httpContent).Result;
                 dynamic response = null;
@@ -99,7 +101,7 @@ namespace MuMonitoring
                     // call 
                     credentials.sessionKey = (string)response.data.SessionKey;
                     ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
-                    validateVersion(config.NewestClientVersion);
+                    bool versionValid = validateVersion(config.NewestClientVersion);
                     StateManager.Init(credentials, config);
                     res_ = "";
                 }
