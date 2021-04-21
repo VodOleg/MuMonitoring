@@ -1,52 +1,34 @@
 ﻿using MuMonitoring.DTOs;
 using MuMonitoring.Static;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
+using System.Timers;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace MuMonitoring
 {
     /// <summary>
     /// Interaction logic for ProcessControler.xaml
     /// </summary>
-    public partial class ProcessControler : UserControl
+    public partial class ProcessControler : UserControl,IDisposable
     {
         private P_Process p_process;
         bool monitor = true;
-        bool stopPeriodicStatus = false;
         bool isColored = true;
-        Task bw_statusLed;
+        System.Timers.Timer m_timer;
 
         public ProcessControler()
         {
             InitializeComponent();
-            InitPeriodic();
-        }
-
-        private void InitPeriodic()
-        {
-            bw_statusLed = Task.Run(() =>
-            {
-                this.periodicStatusFunction();
-            });
         }
 
         private void changeCircleColor() 
         {
             this.Dispatcher.Invoke(() => {
+            if (this == null || this.p_process == null)
+            {
+                return;
+            }
             if (this.isColored && this.p_process.doMonitor)
             {
                 if (this.p_process != null)
@@ -74,16 +56,6 @@ namespace MuMonitoring
             });
         }
 
-        private void periodicStatusFunction()
-        {
-            while (!this.stopPeriodicStatus)
-            {
-                Thread.Sleep(1000);
-                this.changeCircleColor();
-            }
-        }
-
-            
         public void CustomInit(P_Process process)
         {
             this.p_process = process;
@@ -99,7 +71,11 @@ namespace MuMonitoring
             }
 
             this.doMonitor.IsChecked = process.doMonitor;
-            
+
+            //start Timer
+            m_timer = new System.Timers.Timer(1000);
+            m_timer.Elapsed += (Object source, ElapsedEventArgs e) => { this.changeCircleColor(); };
+            m_timer.Start();
         }
 
         public int getProcessID()
@@ -132,6 +108,13 @@ namespace MuMonitoring
         {
             if (p_process!=null)
                 p_process.alias = txtAlias.Text;
+        }
+
+        public void Dispose()
+        {
+            this.m_timer.Stop();
+            this.m_timer.Dispose();
+            p_process = null;
         }
     }
 }

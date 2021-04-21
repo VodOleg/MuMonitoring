@@ -1,5 +1,6 @@
 
 const nodemailer = require('nodemailer');
+const UtilityFunctions = require('./Utils');
 
 
 class MailNotifier{
@@ -17,8 +18,10 @@ class MailNotifier{
         const db_ = require('../config/db');
         try{
             let emailObj = await db_.getEmail(to);
-            if (emailObj.banned){
-                return;
+            if( UtilityFunctions.checkNested(emailObj, "banned") ){
+                if (emailObj.banned){
+                    return;
+                }
             }
     
             let mailOptions = {

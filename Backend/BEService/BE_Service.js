@@ -45,7 +45,7 @@ class MuMonitor_Be{
                     return;
                 }
             });
-        }catch(exc){
+        }catch(exc){ 
             console.error(`Exception occured while filtering dbclients and clients for notify\n${exc}`);
         }
         return ret;

@@ -6,7 +6,18 @@ const UtilityFunctions = {
      */
     isDefined: (item) => {
         return (item !== null && item !== undefined);
-    },
+    }, /**
+    * 
+    * @param {*} obj obj to test
+    * @param {*} level first property
+    * @param  {...any} rest next properties
+    * @returns true if obj.level.rest1.rest2.rest3... defined. false if not
+    */
+   checkNested: (obj, level,  ...rest) => {
+       if (obj === undefined) return false
+       if (rest.length === 0 && obj.hasOwnProperty(level)) return true
+       return UtilityFunctions.checkNested(obj[level], ...rest)
+     },
 
     /**
      * @param value the object to test

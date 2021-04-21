@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MuMonitoring
 {
-    public class DataProcessor
+    public class DataProcessor:IDisposable
     {
         private int intervalMS { get; set; }
         private int suspiciousThreshold { get; set; }
@@ -16,7 +16,6 @@ namespace MuMonitoring
         private int updateCounter = 0;
         private int updateThreshold = 59;
         private int processID { get; set; }
-        private SessionData lastData;
         AnalisysWindow analysis_window;
         private int m_sequentialBadBehaviorFrameSize;
         private bool m_behaviourIsOk = true;
@@ -29,10 +28,9 @@ namespace MuMonitoring
             this.suspiciousThreshold = 6; // should be removed ?
             this.processID = processID;
             this.updateThreshold = 60; // should be removed? 
-            this.analysis_window = new AnalisysWindow(StateManager.m_config.AnalysisWindowSize); //int.Parse(ConfigurationManager.AppSettings["AnalysisWindowSize"]));
-            this.m_sequentialBadBehaviorFrameSize = StateManager.m_config.SequentialBadBehaviourFrameSize; //int.Parse(ConfigurationManager.AppSettings["SequentialBadBehaviourFrameSize"]);
-            this.lastData = new SessionData();
-            //Console.WriteLine($"analysis class ({this.processID}): m_sequentialBadBehaviorFrameSize = {m_sequentialBadBehaviorFrameSize}");
+            this.analysis_window = new AnalisysWindow(StateManager.m_config.AnalysisWindowSize);
+            this.m_sequentialBadBehaviorFrameSize = StateManager.m_config.SequentialBadBehaviourFrameSize;
+            
         }
 
         private bool statisticsAreBad(double val) {
@@ -62,7 +60,7 @@ namespace MuMonitoring
             return m_behaviour_counter >= m_sequentialBadBehaviorFrameSize && analysis_window.isReady(); 
         }
 
-        public SessionData Append(SessionData data_)
+        public void Append(SessionData data_)
         {
 
             updateCounter++;
@@ -91,9 +89,12 @@ namespace MuMonitoring
                 data_.suspicious = true;
                 suspiciousPacketCounter = 0;
             }
+            
+        }
 
-            lastData.hardCopy(data_);
-            return lastData;
+        public void Dispose()
+        {
+            this.analysis_window = null;
         }
     }
 

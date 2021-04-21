@@ -1,10 +1,6 @@
 ﻿using MuMonitoring.DTOs;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MuMonitoring.Static
 {
@@ -87,13 +83,20 @@ namespace MuMonitoring.Static
         {
             foreach (var process in StateManager.monitored_processes.ToList())
                 {
-
                     SessionData somedata = ETWwrapper.getData(process.process.Id);
-                    SessionData lastData = process.data_processor.Append(somedata);
-                    process.disconnected = lastData.disconnected;
-                    process.suspicious = lastData.suspicious;
-                    StateManager.addData(process, somedata);
-
+                    process.data_processor.Append(somedata);
+                    process.disconnected = somedata.disconnected;
+                    process.suspicious = somedata.suspicious;
+                    ClientProcessDTO newData = new ClientProcessDTO()
+                    {
+                        processID = process.process.Id,
+                        alias = process.alias,
+                        disconnected = somedata.disconnected,
+                        suspicious = somedata.suspicious,
+                        timestamp = somedata.timestamp
+                    };
+                StateManager.addData(newData);
+               
                 }
         }
 

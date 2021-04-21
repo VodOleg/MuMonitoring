@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace MuMonitoring.Static
@@ -19,20 +17,24 @@ namespace MuMonitoring.Static
             SetInterval(action, timeout);
         }
 
-        public static BackgroundWorker startBWThread(DoWorkEventHandler cb)
-        {
-            BackgroundWorker bw_ = new BackgroundWorker();
-            bw_.DoWork += cb;
-            bw_.RunWorkerAsync();
-            return bw_;
-        }
-
         private static void logMessageToWindow(object sender, EventArgs e)
         {
             if (newLogMessage != null)
             {
                 newLogMessage(sender, e);
             }
+        }
+
+        public static long measureObjSize(object o)
+        {
+            long size = 0;
+            using (Stream s = new MemoryStream())
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(s, o);
+                size = s.Length;
+            }
+            return size;
         }
 
         public static void NotifyUser(string message)

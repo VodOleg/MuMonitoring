@@ -1,12 +1,6 @@
 ﻿using MuMonitoring.DTOs;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static MuMonitoring.Static.ProcessMonitor;
 
 namespace MuMonitoring.Static
 {
@@ -24,19 +18,11 @@ namespace MuMonitoring.Static
             // init
             m_creds = creds;
             m_config = config;
-
         }
 
-        public static void addData(P_Process process, SessionData data)
+        public static void addData(ClientProcessDTO newData)
         {
-            ClientProcessDTO newData = new ClientProcessDTO()
-            {
-                processID = process.process.Id,
-                alias = process.alias,
-                disconnected = data.disconnected,
-                suspicious = data.suspicious,
-                timestamp = data.timestamp
-            };
+            
             lock (rotatioMutex)
             {
                 if (!(data_to_send[rotationIndex]).ContainsKey(newData.processID))

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MuMonitoring.DTOs
 {
@@ -11,7 +7,7 @@ namespace MuMonitoring.DTOs
     {
     }
 
-    public class P_Process
+    public class P_Process:IDisposable
     {
         public Process process { get; set; }
         public DataProcessor data_processor { get; set; }
@@ -19,5 +15,11 @@ namespace MuMonitoring.DTOs
         public string alias { get; set; } 
         public bool disconnected { get; set; }
         public bool suspicious { get; set; }
+
+        public void Dispose()
+        {
+            this.process = null;
+            this.data_processor = null;
+        }
     }
 }

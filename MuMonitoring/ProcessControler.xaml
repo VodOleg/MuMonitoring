@@ -21,9 +21,9 @@
             </Grid.ColumnDefinitions>
             <Ellipse Name="statusCircle" Grid.Column="0" Fill="LightGreen" HorizontalAlignment="Center" Height="15" Stroke="Transparent" VerticalAlignment="Center" Width="15" />
             
-            <Label Grid.Column="1" Margin="0,0,0,0" x:Name="processTitle"></Label>
-            <Label Grid.Column="2" Margin="0,-5,0,0" x:Name="pidboxlabel">Process Alias :</Label>
-            <TextBox x:Name="txtAlias" HorizontalAlignment="Center" Grid.Column="3" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
+            <Label Grid.Column="1" Margin="0,0,0,0" Name="processTitle"></Label>
+            <Label Grid.Column="2" Margin="0,-5,0,0" Name="pidboxlabel">Process Alias :</Label>
+            <TextBox Name="txtAlias" HorizontalAlignment="Center" Grid.Column="3" Text="pid" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
 
             <CheckBox Margin="0,0,0,0" Name="doMonitor" Grid.Column="4" Width="100" Checked="DoMonitor_Checked" Unchecked="DoMonitor_Unchecked" >
                 <TextBlock Text="Monitor"></TextBlock>

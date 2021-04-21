@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Timers;
 namespace MuMonitoring
 {
     /// <summary>
@@ -15,15 +15,9 @@ namespace MuMonitoring
     {
         public List<ProcessControler> m_monitoredProcessesUC;
         public ProcessMonitor m_pMonitor = null;
-        bool stopPeriodicFunction = false;
-        public BackgroundWorker bw_refreshThread; 
-        public BackgroundWorker bw_dataAnalyzer;
-        public BackgroundWorker bw_BE_reporter;
         public static string m_sCurrentVersion;
-        private static string[] m_dialogStrings = new string[2];
-        private static int dialog_index = 0;
         public static List<string> m_logList = new List<string>();
-
+        private static Dictionary<string, System.Timers.Timer> m_Timers = new Dictionary<string, System.Timers.Timer>();
         
 
         private void logRequested(object sender, EventArgs e)
@@ -58,11 +52,30 @@ namespace MuMonitoring
         private void renderProcessUC()
         {
             this.Dispatcher.Invoke(() => {
+                foreach(var item in mainContainer.Children)
+                {
+                    if( item is ScrollViewer _sv)
+                    {
+                        if ( _sv.Content is StackPanel _sp)
+                        {
+                            foreach(var processController in _sp.Children)
+                            {
+                                if( processController is ProcessControler _pc)
+                                {
+                                    _pc.Dispose();
+                                }
+                            }
+                            _sp.Children.Clear();
+                        }
+                        _sv.Content = null;
+                    }
+                }
                 mainContainer.Children.Clear();
+                m_monitoredProcessesUC.Clear();
+                var as1 = GC.GetTotalMemory(true);
                 ScrollViewer sv = new ScrollViewer();
                 StackPanel sp = new StackPanel();
                 sv.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-
                 lock (StateManager.monitoredProcessesMutex)
                 {
                     foreach (var process in StateManager.monitored_processes)
@@ -73,69 +86,36 @@ namespace MuMonitoring
                         m_monitoredProcessesUC.Add(vs);
                     }
                 }
-                
                 sv.Content = sp;
                 mainContainer.Children.Add(sv);
-
             });
         }
 
         private void refreshProcesses()
         {
-            m_pMonitor.publishActiveProcesses(); // make periodic
-
-            // render the user controls
+            m_pMonitor.publishActiveProcesses();
+            
             renderProcessUC();
-
-        }
-
-        private void periodicUIRefresherHandle(object sender, DoWorkEventArgs e)
-        {
-            Log.Write("starting UI refresh thread");
-            while (!this.stopPeriodicFunction)
-            {
-                Thread.Sleep(StateManager.m_config.ClientRefreshTimeSec * 1000);
-                this.refreshProcesses();
-            }
-        }
-
-        private void periodicDataExtraction (object sender, DoWorkEventArgs e)
-        {
-            Log.Write("starting data extraction thread");
-            while (!this.stopPeriodicFunction)
-            {
-                m_pMonitor.analyzeData();
-                Thread.Sleep(StateManager.m_config.pollingIntervalMS);
-            }
-        }
-
-        private void periodicKeepAlive(object sender, DoWorkEventArgs e)
-        {
-            Log.Write("starting keep alive thread");
-            while (!this.stopPeriodicFunction)
-            {
-                Thread.Sleep(StateManager.m_config.KeepAliveTimeSec * 1000);
-                BackendCom.sendDataToBE();
-            }
         }
 
         private void startClient()
         {
             refreshProcesses();
 
-            bw_refreshThread = new BackgroundWorker();
-            bw_refreshThread.DoWork += this.periodicUIRefresherHandle;
-            bw_refreshThread.RunWorkerAsync();
-            m_pMonitor.run();
+            m_Timers["UIRefresh"] = new System.Timers.Timer(StateManager.m_config.ClientRefreshTimeSec * 1000);
+            m_Timers["UIRefresh"].Elapsed += (Object source, ElapsedEventArgs e) => { this.refreshProcesses(); };
 
-            bw_dataAnalyzer = new BackgroundWorker();
-            bw_dataAnalyzer.DoWork += this.periodicDataExtraction;
-            bw_dataAnalyzer.RunWorkerAsync();
+            m_Timers["DataAnalyzer"] = new System.Timers.Timer(StateManager.m_config.pollingIntervalMS);
+            m_Timers["DataAnalyzer"].Elapsed += (Object source, ElapsedEventArgs e) => { this.m_pMonitor.analyzeData(); };
+            
+            m_Timers["KeepAlive"] = new System.Timers.Timer(StateManager.m_config.KeepAliveTimeSec * 1000);
+            m_Timers["KeepAlive"].Elapsed += (Object source, ElapsedEventArgs e) => { BackendCom.sendDataToBE(); };
 
-            bw_BE_reporter = new BackgroundWorker();
-            bw_BE_reporter.DoWork += this.periodicKeepAlive;
-            bw_BE_reporter.RunWorkerAsync();
-
+            foreach(var timer_ in m_Timers)
+            {
+                timer_.Value.Start();
+            }
+            
         }
 
 
