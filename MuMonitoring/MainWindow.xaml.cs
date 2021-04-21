@@ -190,6 +190,7 @@ namespace MuMonitoring
 
         private void Refresh_btn_Click(object sender, RoutedEventArgs e)
         {
+            ETWwrapper.resetAll();
             m_pMonitor.resetAll();
             refreshProcesses();
         }

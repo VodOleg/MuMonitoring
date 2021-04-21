@@ -40,6 +40,18 @@ namespace MuMonitoring
             }
         }
 
+        public static void resetAll()
+        {
+            lock (m_ProcessIDs)
+            {
+                foreach(var process_ in m_ProcessIDs)
+                {
+                    process_.Value.disconnected = false;
+                    process_.Value.suspicious = false;
+                }
+            }
+        }
+
         private static void StartEtwSession(CancellationToken cancelToken)
         {
             try
