@@ -9,3 +9,5 @@ ToDeploy/Backend
 *.pem
 ToDeploy
 Backend/config/config.env
+ProcessMonitorUnitTest/bin
+ProcessMonitorUnitTest/obj

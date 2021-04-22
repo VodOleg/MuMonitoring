@@ -32,7 +32,7 @@ namespace MuMonitoring
 
         public override string ToString()
         {
-            string dat = $"SessionData: received={this.received}, dc={disconnected} suspicious={suspicious}, timestamp={timestamp.ToString()}";
+            string dat = $"SessionData: received={this.received}, dc={disconnected} suspicious={suspicious}, timestamp={timestamp}";
             return dat;
         }
     }

@@ -72,7 +72,7 @@ namespace MuMonitoring
                         }
                         if (m_ProcessIDs.ContainsKey(data.ProcessID))
                         {
-                            //Console.WriteLine($"rec: {data.ProcessID} ({data.ProcessName}) ->{data.size}");
+                            //Console.WriteLine($"rec: {data.ProcessID} ({data.TimeStamp}) ->{data.size}");
                             lock (m_ProcessIDs[data.ProcessID])
                             {
                                 m_ProcessIDs[data.ProcessID].received = data.size;
@@ -101,7 +101,7 @@ namespace MuMonitoring
                     {
                         if (m_ProcessIDs.ContainsKey(data.ProcessID))
                         {
-                            Console.WriteLine($"detected {data.ProcessID} tcp disconnect");
+                            //Console.WriteLine($"detected {data.ProcessID} tcp disconnect");
                             lock (m_ProcessIDs[data.ProcessID])
                             {
                                 m_ProcessIDs[data.ProcessID].disconnected = true;

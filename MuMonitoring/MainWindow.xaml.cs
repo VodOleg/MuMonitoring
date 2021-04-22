@@ -115,6 +115,7 @@ namespace MuMonitoring
         private void startClient() { 
             //make initial routine here to update web ASAP
             refreshProcesses();
+            m_pMonitor.run();
             m_pMonitor.analyzeData();
             BackendCom.sendDataToBE();
 

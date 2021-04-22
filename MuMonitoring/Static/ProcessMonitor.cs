@@ -1,4 +1,6 @@
 ﻿using MuMonitoring.DTOs;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -84,7 +86,7 @@ namespace MuMonitoring.Static
             return monitoredProcessesChanged;
         }
 
-        public void analyzeData()
+        public void analyzeData(Dictionary<int,Dictionary<Type, Object>> debugList = null)
         {
             foreach (var process in StateManager.monitored_processes.ToList())
                 {
@@ -102,6 +104,17 @@ namespace MuMonitoring.Static
                     };
                 StateManager.addData(newData);
                
+                if (debugList != null)
+                {
+                    // only passed for debugging
+                    if (!debugList.ContainsKey(newData.processID))
+                    {
+                        debugList[newData.processID] = new Dictionary<Type, object>();
+                    }
+                    debugList[newData.processID][typeof(SessionData)] = somedata;
+                    debugList[newData.processID][typeof(ClientProcessDTO)] = newData;
+                }
+
                 }
         }
 
