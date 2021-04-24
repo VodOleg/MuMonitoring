@@ -15,6 +15,7 @@ class App extends Component {
       loggedIn: false,
       invalidSessionCredentials:false,
       clients: [],
+      requiredLogIn:window.screen.availWidth <500,
       showTos:false,
       showEmailConfirm:false,
       email:"",
@@ -85,6 +86,9 @@ class App extends Component {
 
   renderLoginDiv(isRegister){
     let ele = <Wrap>
+      <img src="image0.png" height="220" alt="example"></img>
+      <h6 style={{color:"red"}}>MuMonitor will never ask you for your credentials.</h6>
+      <span style={{color:"red"}}>Log in with the app generated key!</span>
         <Form onSubmit={this.onSubmitCustom}>
             <Form.Group controlId="formBasicSessionName">
                 <Form.Label>Session Name</Form.Label>
@@ -327,13 +331,22 @@ registerEmail(item){
 
 renderGeneral(){
   let ele = <Wrap>
+        { window.screen.availWidth > 500 ?
+        <div style={{marginLeft:"auto", marginRight:"auto", width:"50%",display:"block"}}>
+          <img src="explanation.gif" height="400" alt="Explanation Gif Should Be Here" /><br />
+          </div>
+          :
+          null
+        }
     <div className="general-content">
       <div>
         <span id="heading1">Simple to use:</span><br />
-        1. <span className="download-cfa" onClick={(e)=>{this.downloadClicked(e)}}>Download</span> and run the app. <br />
+        1. <span  className="download-cfa" onClick={(e)=>{this.downloadClicked(e)}}>Download</span> and run the app. <br />
         2. In the app chose a session name and you will be assigned with a session key.<br />
         3. Login this page using your session name and the assigned key.<br />
-      </div>
+      </div><br/>
+      <Button style={{background:"#40b385", borderColor:"#3a3a3a", marginRight:"50px"}} onClick={(e)=>{this.downloadClicked(e)}}>Download</Button>
+      <Button variant="info" onClick={(e)=>{this.setState({requiredLogIn:true})}}>Log in</Button>
     </div>
   </Wrap>
   return ele;
@@ -353,18 +366,24 @@ renderGeneral(){
       </div>
       {!this.state.loggedIn ? 
       <Wrap>
-        <div className="loginForm">
-          {this.state.showTos ? this.renderToS() : null}
-          {this.renderLoginDiv()}
-          {
-            this.state.invalidSessionCredentials ? 
-            this.renderFailureMessage(): null
-          }
-        </div>
+        
         <br />
-        <div className="general">
+        {
+          this.state.requiredLogIn ? 
+          <div className="loginForm">
+            {this.state.showTos ? this.renderToS() : null}
+            {this.renderLoginDiv()}
+            {
+              this.state.invalidSessionCredentials ? 
+              this.renderFailureMessage(): null
+            }
+          </div>
+          
+          :
+          <div className="general">
           {this.renderGeneral()}
         </div>
+        }
 
       </Wrap>
       :

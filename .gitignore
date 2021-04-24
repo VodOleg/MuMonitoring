@@ -11,3 +11,4 @@ ToDeploy
 Backend/config/config.env
 ProcessMonitorUnitTest/bin
 ProcessMonitorUnitTest/obj
+assetsWorkspace

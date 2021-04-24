@@ -96,7 +96,6 @@ namespace MuMonitoring.Static
                 List<SessionData> somedata = ETWwrapper.getData(process.process.Id);
                 if (somedata.Count > 0)
                 {
-
                     process.data_processor.Append(somedata);
                     process.disconnected = somedata.LastOrDefault().disconnected;
                     process.suspicious = somedata.LastOrDefault().suspicious;
@@ -125,6 +124,17 @@ namespace MuMonitoring.Static
 
                         }
                     }
+                }
+                else
+                {
+                    ClientProcessDTO newData = new ClientProcessDTO()
+                    {
+                        processID = process.process.Id,
+                        alias = process.alias,                        
+                        suspicious = true,
+                        timestamp = DateTime.Now
+                    };
+                    StateManager.addData(newData);
                 }
 
             }

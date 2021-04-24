@@ -151,6 +151,7 @@ class MuMonitor_Be{
             if(email.verified && !email.banned){
                 // if verified and not banned register to session and return the email object
                 this.db.registerEmail(sessionName,SessionKey,email.email);
+                this.mailer.sendMail(email.email, `Mu Monitor session start`, `MuMonitor Session Started.\n\nSession Name:${sessionName}\nSession Key:${SessionKey}.${this.renderFooterMail(email.email)}`);
                 return email;    
             }
             else if(!email.verified && !email.banned){

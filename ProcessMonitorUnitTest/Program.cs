@@ -23,7 +23,6 @@ namespace ProcessMonitorUnitTest
         {
             string configFile = "Config.json";
             string inputFile = "";
-            int pid = 0;
             if (!String.IsNullOrEmpty(opts.ConfigFile))
             {
                 configFile = opts.ConfigFile;
