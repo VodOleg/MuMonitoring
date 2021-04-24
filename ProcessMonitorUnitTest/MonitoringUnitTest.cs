@@ -16,11 +16,19 @@ namespace ProcessMonitorUnitTest
 {
     class MonitoringUnitTest
     {
+
+        private int pid = 0;
+
+        public MonitoringUnitTest(int singlePID)
+        {
+            pid = singlePID;
+        }
+
         public ProcessMonitor m_pMonitor = null;
         private Dictionary<string, System.Timers.Timer> m_Timers;
-        Dictionary<int, Dictionary<Type, Object>>[] debugList = {
-            new Dictionary<int, Dictionary<Type, object>>(),
-            new Dictionary<int, Dictionary<Type, object>>()
+        Dictionary<int, List<SessionData>>[] debugList = {
+            new Dictionary<int, List<SessionData>>(),
+            new Dictionary<int, List<SessionData>>()
         };
         private int rotationIndex = 0;
         private static readonly object rotationMutex = new object();
@@ -72,7 +80,14 @@ namespace ProcessMonitorUnitTest
         {
             //init timers list
             m_Timers = new Dictionary<string, System.Timers.Timer>();
-            m_pMonitor.publishActiveProcesses();
+            List<int> processesToInclude = null;
+            if (pid != 0)
+            {
+                processesToInclude = new List<int>();
+                processesToInclude.Add(pid);
+            }
+            m_pMonitor.publishActiveProcesses(processesToInclude);
+
             m_pMonitor.run();
             
             m_Timers["DataAnalyzer"] = new System.Timers.Timer(StateManager.m_config.pollingIntervalMS);
@@ -108,35 +123,61 @@ namespace ProcessMonitorUnitTest
 
         private void dumpData(int indexToDump)
         {
-            Console.WriteLine($"dumping[{indexToDump}] length={debugList[indexToDump].Count} other count={debugList[rotationIndex].Count} , indexToDump={indexToDump} , rotation={rotationIndex}");
+            //Console.Clear();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("----------------------------------------------\n");
+            sb.Append($"list[{indexToDump}].Count = {debugList[indexToDump].Count}\n");
             foreach (var item in debugList[indexToDump])
             {
-                SessionData sessionData = (SessionData)(item.Value[typeof(SessionData)]);
-                ClientProcessDTO clientProcess = (ClientProcessDTO)(item.Value[typeof(ClientProcessDTO)]);
-                string fileDumpName = $"output/{clientProcess.processID}_.csv";
+                //SessionData sessionData = (SessionData)(item.Value[typeof(SessionData)]);
+                string fileDumpName = $"output/{item.Key}_.csv";
 
-                string dataMessage = "";
-
+                StringBuilder dataMessage = new StringBuilder();
+                bool isSuspivious = false;
+                string reason_ = "";
                 Directory.CreateDirectory("output");
 
                 if (!File.Exists(fileDumpName))
                 {
-                    dataMessage += "Time,Received,Suspicius,Disconnected\n";
+                    dataMessage.Append("Time,Received,Suspicius,Disconnected,subsetsCount\n");
                 }
+                foreach(var sessionData in item.Value)
+                {
+                    dataMessage.Append($"{sessionData.timestamp},{sessionData.received},{sessionData.suspicious},{sessionData.disconnected},{sessionData.subsetsCount}\n");
+                    
+                    if (sessionData.suspicious)
+                    {
+                        isSuspivious = true;
+                        reason_ += sessionData.reason + ", ";
+                    }
+                    
+                }
+                int subCount = (item.Value.Count > 0 ? item.Value[0].subsetsCount : -1);
+                sb.Append($"[{item.Key}: {item.Value.Count}] [subCount:{subCount}] suspicious={isSuspivious} ({reason_})\n");
 
-                dataMessage += $"{sessionData.timestamp.ToString()},{sessionData.received},{clientProcess.suspicious},{clientProcess.disconnected}";
-                using (FileStream sourceStream = new FileStream(fileDumpName,
+                dumpToFile("summary.log", sb.ToString(), false);
+                dumpToFile(fileDumpName, dataMessage.ToString(), false);
+            }
+        }
+
+        private void dumpToFile(string fileName, string Message, bool isAsync, bool overwrite = true)
+        {
+            using (FileStream sourceStream = new FileStream(fileName,
                 FileMode.Append, FileAccess.Write, FileShare.None,
                 bufferSize: 4096, useAsync: true))
+            {
+                using (StreamWriter sw = new StreamWriter(sourceStream))
                 {
-                    using (StreamWriter sw = new StreamWriter(sourceStream))
+                    if (isAsync)
                     {
-                        //writes async
-                        //sw.WriteLineAsync(dataMessage).Wait();
-                        sw.WriteLine(dataMessage);
+                        sw.WriteAsync(Message);
                     }
-                };
-            }
+                    else
+                    {
+                        sw.Write(Message);
+                    }
+                }
+            };
         }
 
         private void analyze(string filePath)

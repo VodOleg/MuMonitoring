@@ -21,6 +21,7 @@ namespace MuMonitoring
         private bool m_behaviourIsOk = true;
         private int m_behaviour_counter = 0;
         private bool stopNotifyingStatistics = false;
+        private int MinPacketsPerPolling;
 
         public DataProcessor(int processID)
         {
@@ -28,12 +29,16 @@ namespace MuMonitoring
             this.suspiciousThreshold = 6; // should be removed ?
             this.processID = processID;
             this.updateThreshold = 60; // should be removed? 
-            this.analysis_window = new AnalisysWindow(StateManager.m_config.AnalysisWindowSize);
+            this.MinPacketsPerPolling = StateManager.m_config.MinPacketsPerPolling;
+            this.analysis_window = new AnalisysWindow(
+                StateManager.m_config.AnalysisWindowSize,
+                StateManager.m_config.AnalysisWindowSubsetsThreshold,
+                StateManager.m_config.AnalysisWindowBinCount);
             this.m_sequentialBadBehaviorFrameSize = StateManager.m_config.SequentialBadBehaviourFrameSize;
             
         }
 
-        private bool statisticsAreBad(double val) {
+        private bool statisticsAreBad(SessionData val) {
             bool behaviorIsOk = analysis_window.AppendAndCheck(val);
 
             if (behaviorIsOk && !m_behaviourIsOk)
@@ -56,11 +61,10 @@ namespace MuMonitoring
                 //both are ok
                 m_behaviour_counter = 0;
             }
-
             return m_behaviour_counter >= m_sequentialBadBehaviorFrameSize && analysis_window.isReady(); 
         }
 
-        public void Append(SessionData data_)
+        public void Append(List<SessionData> data_list)
         {
 
             updateCounter++;
@@ -70,24 +74,35 @@ namespace MuMonitoring
                 updateCounter = 0;
             }
 
-            if (statisticsAreBad(data_.received) && !stopNotifyingStatistics)
+            foreach(var data_ in data_list)
             {
-                suspiciousPacketCounter = 0;
-                data_.suspicious = true;
-            }
 
-            double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
-            if (milliseconds_passed_since_data > intervalMS)
-            {
-                suspiciousPacketCounter++;
-            }
+                if (statisticsAreBad(data_) && !stopNotifyingStatistics)
+                {
+                    suspiciousPacketCounter = 0;
+                    data_.suspicious = true;
+                    data_.reason = "statistics are bad";
+                }
+
+                //double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
+                //if (milliseconds_passed_since_data > intervalMS)
+                //{
+                //    suspiciousPacketCounter++;
+                //}
 
             
 
-            if (suspiciousPacketCounter > suspiciousThreshold)
-            {
-                data_.suspicious = true;
-                suspiciousPacketCounter = 0;
+                //if (suspiciousPacketCounter > suspiciousThreshold)
+                //{
+                //    data_.suspicious = true;
+                //    data_.reason = $"suspicious packet counter = {suspiciousPacketCounter}";
+                //    suspiciousPacketCounter = 0;
+                //}
+                if ( data_list.Count < this.MinPacketsPerPolling)
+                {
+                    data_.suspicious = true;
+                    data_.reason = $"packets count : {data_list.Count}";
+                }
             }
             
         }
@@ -101,20 +116,27 @@ namespace MuMonitoring
     class AnalisysWindow
     {
         private int windowSize;
+        private int subsetsThreshold;
+        private int binCount;
         private Queue<double> container_;
-        public AnalisysWindow(int windowSize)
+        public AnalisysWindow(int windowSize, int subsetsThreshold, int bins)
         {
             this.windowSize = windowSize;
+            this.subsetsThreshold = subsetsThreshold;
+            this.binCount = bins;
             container_ = new Queue<double>(windowSize);
         }
 
-        public void Append(double newValue)
+        public void Append(SessionData newValue)
         {
-            if (container_.Count >= this.windowSize)
+            lock (container_)
             {
-                container_.Dequeue();
+                if (container_.Count >= this.windowSize)
+                {
+                    container_.Dequeue();
+                }
+                container_.Enqueue(newValue.received);
             }
-            container_.Enqueue(newValue);
         }
 
         private float variance(double[] a)
@@ -191,32 +213,30 @@ namespace MuMonitoring
             return (float)Math.Sqrt(variance(arr));
         }
 
-        public bool Check()
-        {
-            var subsets_count = numOfSubsets(10);
-
-            float var = variance(container_.ToArray());
-            //Console.WriteLine("Variance: " + var);
-
-            float devi = standardDeviation(container_.ToArray());
-            //Console.WriteLine("Standard Deviation: " + devi);
-
-            bool isValid = ((subsets_count > 3)) && container_.Count == windowSize;
-            
-            
-            return isValid;
-        }
 
         public bool isReady()
         {
-            return this.container_.Count == this.windowSize;
+            bool ret = false;
+            lock (this.container_)
+            {
+                ret = this.container_.Count == this.windowSize;
+            }
+            return ret;
         }
 
-        public bool AppendAndCheck(double newValue)
+        public bool AppendAndCheck(SessionData newValue)
         {
             Append(newValue);
+            bool isValid = true;
 
-            return Check();
+            lock (container_)
+            {
+                var subsets_count = numOfSubsets(binCount);
+                newValue.subsetsCount = subsets_count;
+                isValid = ((subsets_count > subsetsThreshold)) && container_.Count == windowSize;
+            }
+
+            return isValid;
         }
 
         public string getValues()

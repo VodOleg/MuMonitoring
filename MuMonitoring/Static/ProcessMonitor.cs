@@ -13,9 +13,8 @@ namespace MuMonitoring.Static
             //
         }
 
-       
-
-        public bool publishActiveProcesses()
+      
+        public bool publishActiveProcesses(List<int> processIdToInclude = null)
         {
             Process[] localAll = Process.GetProcessesByName(StateManager.m_config.ProcessName);
             bool monitoredProcessesChanged = false;
@@ -67,55 +66,69 @@ namespace MuMonitoring.Static
                         continue;
                     }
 
-                    // this is a new process which we should add to the list to monitor
-                    P_Process monitoredProcess = new P_Process();
-                    monitoredProcess.doMonitor = true;
-                    monitoredProcess.process = process;
-                    monitoredProcess.data_processor = new DataProcessor(process.Id);
-                    StateManager.monitored_processes.Add(monitoredProcess);
+                    if(processIdToInclude==null || (processIdToInclude != null && processIdToInclude.Contains(process.Id)))
+                    {
+                        // this is a new process which we should add to the list to monitor
+                        P_Process monitoredProcess = new P_Process();
+                        monitoredProcess.doMonitor = true;
+                        monitoredProcess.process = process;
+                        monitoredProcess.data_processor = new DataProcessor(process.Id);
+                        StateManager.monitored_processes.Add(monitoredProcess);
                     
-                    ETWwrapper.addProcess(process.Id); 
+                        ETWwrapper.addProcess(process.Id); 
 
-                    //sort the monitored processes according to their start time
-                    StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
+                        //sort the monitored processes according to their start time
+                        StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
 
-                    monitoredProcessesChanged = true;
+                        monitoredProcessesChanged = true;
+
+                    }
                 }
 
             }
             return monitoredProcessesChanged;
         }
 
-        public void analyzeData(Dictionary<int,Dictionary<Type, Object>> debugList = null)
+        public void analyzeData(Dictionary<int,List<SessionData>> debugList = null)
         {
             foreach (var process in StateManager.monitored_processes.ToList())
+            {
+                List<SessionData> somedata = ETWwrapper.getData(process.process.Id);
+                if (somedata.Count > 0)
                 {
-                    SessionData somedata = ETWwrapper.getData(process.process.Id);
+
                     process.data_processor.Append(somedata);
-                    process.disconnected = somedata.disconnected;
-                    process.suspicious = somedata.suspicious;
+                    process.disconnected = somedata.LastOrDefault().disconnected;
+                    process.suspicious = somedata.LastOrDefault().suspicious;
                     ClientProcessDTO newData = new ClientProcessDTO()
                     {
                         processID = process.process.Id,
                         alias = process.alias,
-                        disconnected = somedata.disconnected,
-                        suspicious = somedata.suspicious,
-                        timestamp = somedata.timestamp
+                        disconnected = somedata.LastOrDefault().disconnected,
+                        suspicious = somedata.LastOrDefault().suspicious,
+                        timestamp = somedata.LastOrDefault().timestamp
                     };
-                StateManager.addData(newData);
-               
-                if (debugList != null)
-                {
-                    // only passed for debugging
-                    if (!debugList.ContainsKey(newData.processID))
+                    StateManager.addData(newData);
+
+
+                    if (debugList != null)
                     {
-                        debugList[newData.processID] = new Dictionary<Type, object>();
+                        // only passed for debugging
+                        if (!debugList.ContainsKey(newData.processID))
+                        {
+                            debugList[newData.processID] = new List<SessionData>();
+                        }
+                        //debugList[newData.processID][typeof(SessionData)] = somedata;
+                        foreach (var data in somedata)
+                        {
+                            debugList[process.process.Id].Add(data);
+
+                        }
                     }
-                    debugList[newData.processID][typeof(SessionData)] = somedata;
-                    debugList[newData.processID][typeof(ClientProcessDTO)] = newData;
                 }
 
-                }
+            }
+            ETWwrapper.rotate();
         }
 
         public void run()

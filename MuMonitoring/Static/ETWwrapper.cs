@@ -14,7 +14,12 @@ namespace MuMonitoring
     {
         private static Task m_workingThread;
         private static CancellationTokenSource _tokenSource = null;
-        private static Dictionary<int, SessionData> m_ProcessIDs = new Dictionary<int, SessionData>();
+        private static Dictionary<int, List<SessionData>>[] m_ProcessIDs = { 
+            new Dictionary<int, List<SessionData>>() ,
+            new Dictionary<int, List<SessionData>>()
+        };
+        private static int rotationIndex = 0;
+        private static readonly object rotationMutex = new object();
         private static TraceEventSession m_EtwSession;
 
         public static void start()
@@ -28,7 +33,13 @@ namespace MuMonitoring
         {
             lock (m_ProcessIDs)
             {
-                m_ProcessIDs[processID] = new SessionData();
+                foreach(var dic_ in m_ProcessIDs)
+                {
+                    dic_[processID] = new List<SessionData>();
+                }
+
+                //m_ProcessIDs[processID][0] = new List<SessionData>();// SessionData();
+                //m_ProcessIDs[processID][1] = new List<SessionData>();// SessionData();
             }
         }
 
@@ -36,7 +47,15 @@ namespace MuMonitoring
         {
             lock (m_ProcessIDs)
             {
-                m_ProcessIDs.Remove(processID);
+                foreach(var dic_ in m_ProcessIDs)
+                {
+                    dic_[processID].Clear();
+                    dic_.Remove(processID);
+                }
+                //m_ProcessIDs[0][processID].Clear();
+                //m_ProcessIDs[1][processID].Clear();
+                //m_ProcessIDs[0].Remove(processID);
+                //m_ProcessIDs[1].Remove(processID);
             }
         }
 
@@ -44,11 +63,13 @@ namespace MuMonitoring
         {
             lock (m_ProcessIDs)
             {
-                foreach(var process_ in m_ProcessIDs)
+                foreach(var listOfData in m_ProcessIDs)
                 {
-                    process_.Value.disconnected = false;
-                    process_.Value.suspicious = false;
+                    listOfData.Clear();
+                    //process_.Value.disconnected = false;
+                    //process_.Value.suspicious = false;
                 }
+
             }
         }
 
@@ -63,22 +84,27 @@ namespace MuMonitoring
 
                     m_EtwSession.Source.Kernel.TcpIpRecv += data =>
                     {
-                        //Console.WriteLine($"process reading: {data.ProcessID}");
                         if (cancelToken.IsCancellationRequested)
                         {
                             // stop the monitor
                             //Console.WriteLine("canceled rec");
                             return;
                         }
-                        if (m_ProcessIDs.ContainsKey(data.ProcessID))
+                        lock (rotationMutex)
                         {
-                            //Console.WriteLine($"rec: {data.ProcessID} ({data.TimeStamp}) ->{data.size}");
-                            lock (m_ProcessIDs[data.ProcessID])
-                            {
-                                m_ProcessIDs[data.ProcessID].received = data.size;
-                                m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
-                            }
 
+                            if (m_ProcessIDs[rotationIndex].ContainsKey(data.ProcessID))
+                            {
+                                lock (m_ProcessIDs[rotationIndex][data.ProcessID])
+                                {
+                                    SessionData new_data = new SessionData();
+                                    new_data.disconnected = false;
+                                    new_data.received = data.size;
+                                    new_data.timestamp = data.TimeStamp;
+                                    m_ProcessIDs[rotationIndex][data.ProcessID].Add(new_data);
+                                }
+
+                            }
                         }
                     };
                     m_EtwSession.Source.Kernel.TcpIpConnect += data =>
@@ -87,45 +113,57 @@ namespace MuMonitoring
                         {
                             return;
                         }
-                        if (m_ProcessIDs.ContainsKey(data.ProcessID))
+                        lock (rotationMutex)
                         {
-                            lock (m_ProcessIDs[data.ProcessID])
+
+                            if (m_ProcessIDs[rotationIndex].ContainsKey(data.ProcessID))
                             {
-                                m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
-                                m_ProcessIDs[data.ProcessID].disconnected = false;
+                                lock (m_ProcessIDs[rotationIndex][data.ProcessID])
+                                {
+                                    SessionData new_data = new SessionData();
+                                    new_data.disconnected = false;
+                                    new_data.received = data.size;
+                                    new_data.timestamp = data.TimeStamp;
+                                    m_ProcessIDs[rotationIndex][data.ProcessID].Add(new_data);
+                                }
                             }
                         }
                     };
 
                     m_EtwSession.Source.Kernel.TcpIpDisconnect += data =>
                     {
-                        if (m_ProcessIDs.ContainsKey(data.ProcessID))
+                        lock (rotationMutex)
                         {
-                            //Console.WriteLine($"detected {data.ProcessID} tcp disconnect");
-                            lock (m_ProcessIDs[data.ProcessID])
+                            if (m_ProcessIDs[rotationIndex].ContainsKey(data.ProcessID))
                             {
-                                m_ProcessIDs[data.ProcessID].disconnected = true;
-                                m_ProcessIDs[data.ProcessID].received = data.size;
-                                m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
+                                lock (m_ProcessIDs[rotationIndex][data.ProcessID])
+                                {
+                                    SessionData new_data = new SessionData();
+                                    new_data.disconnected = true;
+                                    new_data.received = data.size;
+                                    new_data.timestamp = data.TimeStamp;
+                                    m_ProcessIDs[rotationIndex][data.ProcessID].Add(new_data);
+                                }
                             }
+
                         }
                     };
 
-                    m_EtwSession.Source.Kernel.TcpIpSend += data =>
-                    {
-                        if (cancelToken.IsCancellationRequested)
-                        {
-                            // stop the monitor
-                            return;
-                        }
-                        if (m_ProcessIDs.ContainsKey(data.ProcessID))
-                        {
-                            lock (m_ProcessIDs[data.ProcessID])
-                            {
-                                m_ProcessIDs[data.ProcessID].sent = data.size;
-                            }
-                        }
-                    };
+                    //m_EtwSession.Source.Kernel.TcpIpSend += data =>
+                    //{
+                    //    if (cancelToken.IsCancellationRequested)
+                    //    {
+                    //        // stop the monitor
+                    //        return;
+                    //    }
+                    //    if (m_ProcessIDs.ContainsKey(data.ProcessID))
+                    //    {
+                    //        lock (m_ProcessIDs[data.ProcessID])
+                    //        {
+                    //            m_ProcessIDs[data.ProcessID].sent = data.size;
+                    //        }
+                    //    }
+                    //};
 
                     m_EtwSession.Source.Process();
                 }
@@ -138,19 +176,25 @@ namespace MuMonitoring
             }
         }
 
-        public static SessionData getData(int ProcessID)
+        public static List<SessionData> getData(int ProcessID)
         {
-            SessionData dataToReturn = new SessionData();
+            List<SessionData> dataToReturn;
             
-
-            if (m_ProcessIDs.ContainsKey(ProcessID))
+            lock (rotationMutex)
             {
-                lock (m_ProcessIDs[ProcessID])
-                {
-                    dataToReturn.hardCopy(m_ProcessIDs[ProcessID]);
-                }
+                dataToReturn = m_ProcessIDs[rotationIndex][ProcessID].ToList();
+                m_ProcessIDs[rotationIndex][ProcessID].Clear();
             }
+            
             return dataToReturn;
+        }
+
+        public static void rotate()
+        {
+            lock (rotationMutex)
+            {
+                rotationIndex = (rotationIndex + 1) % 2;
+            }
         }
     }
 }
