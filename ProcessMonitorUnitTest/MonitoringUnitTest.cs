@@ -16,11 +16,19 @@ namespace ProcessMonitorUnitTest
 {
     class MonitoringUnitTest
     {
+
+        private int pid = 0;
+
+        public MonitoringUnitTest(int singlePID)
+        {
+            pid = singlePID;
+        }
+
         public ProcessMonitor m_pMonitor = null;
         private Dictionary<string, System.Timers.Timer> m_Timers;
-        Dictionary<int, Dictionary<Type, Object>>[] debugList = {
-            new Dictionary<int, Dictionary<Type, object>>(),
-            new Dictionary<int, Dictionary<Type, object>>()
+        Dictionary<int, List<SessionData>>[] debugList = {
+            new Dictionary<int, List<SessionData>>(),
+            new Dictionary<int, List<SessionData>>()
         };
         private int rotationIndex = 0;
         private static readonly object rotationMutex = new object();
@@ -79,6 +87,7 @@ namespace ProcessMonitorUnitTest
             m_Timers["DataAnalyzer"].Elapsed += (Object source, ElapsedEventArgs e) => {
                 lock (rotationMutex)
                 {
+                    Console.WriteLine($"Filling up debugList[{rotationIndex}]");
                     this.m_pMonitor.analyzeData(debugList[rotationIndex]);
                 }
             };
@@ -108,23 +117,39 @@ namespace ProcessMonitorUnitTest
 
         private void dumpData(int indexToDump)
         {
-            Console.WriteLine($"dumping[{indexToDump}] length={debugList[indexToDump].Count} other count={debugList[rotationIndex].Count} , indexToDump={indexToDump} , rotation={rotationIndex}");
+            //Console.Clear();
+            Console.WriteLine("----------------------------------------------");
+            Console.WriteLine($"list[{indexToDump}].Count = {debugList[indexToDump].Count}");
             foreach (var item in debugList[indexToDump])
             {
-                SessionData sessionData = (SessionData)(item.Value[typeof(SessionData)]);
-                ClientProcessDTO clientProcess = (ClientProcessDTO)(item.Value[typeof(ClientProcessDTO)]);
-                string fileDumpName = $"output/{clientProcess.processID}_.csv";
+                if(pid!=0 && item.Key != pid) {
+                    continue;
+                }
+
+                //SessionData sessionData = (SessionData)(item.Value[typeof(SessionData)]);
+                string fileDumpName = $"output/{item.Key}_.csv";
 
                 string dataMessage = "";
-
+                bool isSuspivious = false;
+                string reason_ = "";
                 Directory.CreateDirectory("output");
 
                 if (!File.Exists(fileDumpName))
                 {
                     dataMessage += "Time,Received,Suspicius,Disconnected\n";
                 }
+                foreach(var sessionData in item.Value)
+                {
+                    dataMessage += $"{sessionData.timestamp.ToString()},{sessionData.received},{sessionData.suspicious},{sessionData.disconnected}\n";
+                    
+                    if (sessionData.suspicious)
+                    {
+                        isSuspivious = true;
+                        reason_ += sessionData.reason + ", ";
+                    }
+                }
+                Console.WriteLine($"[{item.Key}: {item.Value.Count}] suspicious={isSuspivious} ({reason_})");
 
-                dataMessage += $"{sessionData.timestamp.ToString()},{sessionData.received},{clientProcess.suspicious},{clientProcess.disconnected}";
                 using (FileStream sourceStream = new FileStream(fileDumpName,
                 FileMode.Append, FileAccess.Write, FileShare.None,
                 bufferSize: 4096, useAsync: true))
@@ -133,7 +158,7 @@ namespace ProcessMonitorUnitTest
                     {
                         //writes async
                         //sw.WriteLineAsync(dataMessage).Wait();
-                        sw.WriteLine(dataMessage);
+                        sw.Write(dataMessage);
                     }
                 };
             }

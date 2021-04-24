@@ -15,13 +15,15 @@ namespace ProcessMonitorUnitTest
             public string ConfigFile { get; set; }
             [Option('o', "offlineFile", HelpText = "Analyze file in offline mode.")]
             public string InputFile { get; set; }
+            [Option('f', "filterProcess" , HelpText = "only monitor single pide")]
+            public int singlePID { get; set; }
         }
 
         static void startTest(Options opts)
         {
             string configFile = "Config.json";
             string inputFile = "";
-
+            int pid = 0;
             if (!String.IsNullOrEmpty(opts.ConfigFile))
             {
                 configFile = opts.ConfigFile;
@@ -32,7 +34,7 @@ namespace ProcessMonitorUnitTest
                 inputFile = opts.InputFile;
             }
 
-            MonitoringUnitTest test = new MonitoringUnitTest();
+            MonitoringUnitTest test = new MonitoringUnitTest(opts.singlePID);
             test.startTest(configFile, inputFile);
         }
 

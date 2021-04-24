@@ -60,7 +60,7 @@ namespace MuMonitoring
             return m_behaviour_counter >= m_sequentialBadBehaviorFrameSize && analysis_window.isReady(); 
         }
 
-        public void Append(SessionData data_)
+        public void Append(List<SessionData> data_list)
         {
 
             updateCounter++;
@@ -70,24 +70,35 @@ namespace MuMonitoring
                 updateCounter = 0;
             }
 
-            if (statisticsAreBad(data_.received) && !stopNotifyingStatistics)
+            foreach(var data_ in data_list)
             {
-                suspiciousPacketCounter = 0;
-                data_.suspicious = true;
-            }
 
-            double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
-            if (milliseconds_passed_since_data > intervalMS)
-            {
-                suspiciousPacketCounter++;
-            }
+                if (statisticsAreBad(data_.received) && !stopNotifyingStatistics)
+                {
+                    suspiciousPacketCounter = 0;
+                    data_.suspicious = true;
+                    data_.reason = "statistics are bad";
+                }
+
+                //double milliseconds_passed_since_data = DateTime.Now.Subtract(data_.timestamp).TotalMilliseconds;
+                //if (milliseconds_passed_since_data > intervalMS)
+                //{
+                //    suspiciousPacketCounter++;
+                //}
 
             
 
-            if (suspiciousPacketCounter > suspiciousThreshold)
-            {
-                data_.suspicious = true;
-                suspiciousPacketCounter = 0;
+                //if (suspiciousPacketCounter > suspiciousThreshold)
+                //{
+                //    data_.suspicious = true;
+                //    data_.reason = $"suspicious packet counter = {suspiciousPacketCounter}";
+                //    suspiciousPacketCounter = 0;
+                //}
+                if ( data_list.Count < 15)
+                {
+                    data_.suspicious = true;
+                    data_.reason = $"packets count : {data_list.Count}";
+                }
             }
             
         }
@@ -110,11 +121,14 @@ namespace MuMonitoring
 
         public void Append(double newValue)
         {
-            if (container_.Count >= this.windowSize)
+            lock (container_)
             {
-                container_.Dequeue();
+                if (container_.Count >= this.windowSize)
+                {
+                    container_.Dequeue();
+                }
+                container_.Enqueue(newValue);
             }
-            container_.Enqueue(newValue);
         }
 
         private float variance(double[] a)
@@ -193,23 +207,24 @@ namespace MuMonitoring
 
         public bool Check()
         {
-            var subsets_count = numOfSubsets(10);
-
-            float var = variance(container_.ToArray());
-            //Console.WriteLine("Variance: " + var);
-
-            float devi = standardDeviation(container_.ToArray());
-            //Console.WriteLine("Standard Deviation: " + devi);
-
-            bool isValid = ((subsets_count > 3)) && container_.Count == windowSize;
-            
+            bool isValid = true;
+            lock (container_)
+            {
+                var subsets_count = numOfSubsets(10);
+                isValid = ((subsets_count > 3)) && container_.Count == windowSize;
+            }
             
             return isValid;
         }
 
         public bool isReady()
         {
-            return this.container_.Count == this.windowSize;
+            bool ret = false;
+            lock (this.container_)
+            {
+                ret = this.container_.Count == this.windowSize;
+            }
+            return ret;
         }
 
         public bool AppendAndCheck(double newValue)
