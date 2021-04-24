@@ -13,11 +13,12 @@ namespace MuMonitoring
             disconnected = false;
             suspicious = false;
             reason = "";
+            subsetsCount = 0;
         }
         public int sent { get; set; }
         public int received { get; set; }
         public DateTime timestamp { get; set; }
-        
+        public int subsetsCount { get; set; }
         public double cpuUsage { get; set; }
         public bool disconnected { get; set; }
         public bool suspicious { get; set; }
@@ -31,6 +32,7 @@ namespace MuMonitoring
             this.disconnected = other.disconnected;
             this.suspicious = other.suspicious;
             this.reason = other.reason;
+            this.subsetsCount = other.subsetsCount;
         }
 
         public override string ToString()

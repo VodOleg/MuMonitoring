@@ -80,14 +80,20 @@ namespace ProcessMonitorUnitTest
         {
             //init timers list
             m_Timers = new Dictionary<string, System.Timers.Timer>();
-            m_pMonitor.publishActiveProcesses();
+            List<int> processesToInclude = null;
+            if (pid != 0)
+            {
+                processesToInclude = new List<int>();
+                processesToInclude.Add(pid);
+            }
+            m_pMonitor.publishActiveProcesses(processesToInclude);
+
             m_pMonitor.run();
             
             m_Timers["DataAnalyzer"] = new System.Timers.Timer(StateManager.m_config.pollingIntervalMS);
             m_Timers["DataAnalyzer"].Elapsed += (Object source, ElapsedEventArgs e) => {
                 lock (rotationMutex)
                 {
-                    Console.WriteLine($"Filling up debugList[{rotationIndex}]");
                     this.m_pMonitor.analyzeData(debugList[rotationIndex]);
                 }
             };
@@ -118,50 +124,60 @@ namespace ProcessMonitorUnitTest
         private void dumpData(int indexToDump)
         {
             //Console.Clear();
-            Console.WriteLine("----------------------------------------------");
-            Console.WriteLine($"list[{indexToDump}].Count = {debugList[indexToDump].Count}");
+            StringBuilder sb = new StringBuilder();
+            sb.Append("----------------------------------------------\n");
+            sb.Append($"list[{indexToDump}].Count = {debugList[indexToDump].Count}\n");
             foreach (var item in debugList[indexToDump])
             {
-                if(pid!=0 && item.Key != pid) {
-                    continue;
-                }
-
                 //SessionData sessionData = (SessionData)(item.Value[typeof(SessionData)]);
                 string fileDumpName = $"output/{item.Key}_.csv";
 
-                string dataMessage = "";
+                StringBuilder dataMessage = new StringBuilder();
                 bool isSuspivious = false;
                 string reason_ = "";
                 Directory.CreateDirectory("output");
 
                 if (!File.Exists(fileDumpName))
                 {
-                    dataMessage += "Time,Received,Suspicius,Disconnected\n";
+                    dataMessage.Append("Time,Received,Suspicius,Disconnected,subsetsCount\n");
                 }
                 foreach(var sessionData in item.Value)
                 {
-                    dataMessage += $"{sessionData.timestamp.ToString()},{sessionData.received},{sessionData.suspicious},{sessionData.disconnected}\n";
+                    dataMessage.Append($"{sessionData.timestamp},{sessionData.received},{sessionData.suspicious},{sessionData.disconnected},{sessionData.subsetsCount}\n");
                     
                     if (sessionData.suspicious)
                     {
                         isSuspivious = true;
                         reason_ += sessionData.reason + ", ";
                     }
+                    
                 }
-                Console.WriteLine($"[{item.Key}: {item.Value.Count}] suspicious={isSuspivious} ({reason_})");
+                int subCount = (item.Value.Count > 0 ? item.Value[0].subsetsCount : -1);
+                sb.Append($"[{item.Key}: {item.Value.Count}] [subCount:{subCount}] suspicious={isSuspivious} ({reason_})\n");
 
-                using (FileStream sourceStream = new FileStream(fileDumpName,
+                dumpToFile("summary.log", sb.ToString(), false);
+                dumpToFile(fileDumpName, dataMessage.ToString(), false);
+            }
+        }
+
+        private void dumpToFile(string fileName, string Message, bool isAsync, bool overwrite = true)
+        {
+            using (FileStream sourceStream = new FileStream(fileName,
                 FileMode.Append, FileAccess.Write, FileShare.None,
                 bufferSize: 4096, useAsync: true))
+            {
+                using (StreamWriter sw = new StreamWriter(sourceStream))
                 {
-                    using (StreamWriter sw = new StreamWriter(sourceStream))
+                    if (isAsync)
                     {
-                        //writes async
-                        //sw.WriteLineAsync(dataMessage).Wait();
-                        sw.Write(dataMessage);
+                        sw.WriteAsync(Message);
                     }
-                };
-            }
+                    else
+                    {
+                        sw.Write(Message);
+                    }
+                }
+            };
         }
 
         private void analyze(string filePath)

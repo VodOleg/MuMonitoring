@@ -84,7 +84,6 @@ namespace MuMonitoring
 
                     m_EtwSession.Source.Kernel.TcpIpRecv += data =>
                     {
-                        //Console.WriteLine($"process reading: {data.ProcessID}");
                         if (cancelToken.IsCancellationRequested)
                         {
                             // stop the monitor
@@ -96,7 +95,6 @@ namespace MuMonitoring
 
                             if (m_ProcessIDs[rotationIndex].ContainsKey(data.ProcessID))
                             {
-                                //Console.WriteLine($"rec: {data.ProcessID} ({data.TimeStamp}) ->{data.size}");
                                 lock (m_ProcessIDs[rotationIndex][data.ProcessID])
                                 {
                                     SessionData new_data = new SessionData();
@@ -104,8 +102,6 @@ namespace MuMonitoring
                                     new_data.received = data.size;
                                     new_data.timestamp = data.TimeStamp;
                                     m_ProcessIDs[rotationIndex][data.ProcessID].Add(new_data);
-                                    //m_ProcessIDs[data.ProcessID].received = data.size;
-                                    //m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
                                 }
 
                             }
@@ -140,7 +136,6 @@ namespace MuMonitoring
                         {
                             if (m_ProcessIDs[rotationIndex].ContainsKey(data.ProcessID))
                             {
-                                //Console.WriteLine($"detected {data.ProcessID} tcp disconnect");
                                 lock (m_ProcessIDs[rotationIndex][data.ProcessID])
                                 {
                                     SessionData new_data = new SessionData();
@@ -148,9 +143,6 @@ namespace MuMonitoring
                                     new_data.received = data.size;
                                     new_data.timestamp = data.TimeStamp;
                                     m_ProcessIDs[rotationIndex][data.ProcessID].Add(new_data);
-                                    //m_ProcessIDs[data.ProcessID].disconnected = true;
-                                    //m_ProcessIDs[data.ProcessID].received = data.size;
-                                    //m_ProcessIDs[data.ProcessID].timestamp = data.TimeStamp;
                                 }
                             }
 
@@ -186,7 +178,7 @@ namespace MuMonitoring
 
         public static List<SessionData> getData(int ProcessID)
         {
-            List<SessionData> dataToReturn;// = new SessionData();
+            List<SessionData> dataToReturn;
             
             lock (rotationMutex)
             {

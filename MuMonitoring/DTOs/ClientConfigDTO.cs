@@ -12,6 +12,10 @@ namespace MuMonitoring.DTOs
         public int ClientRefreshTimeSec { get; set; }
         public int KeepAliveTimeSec { get; set; }
         public Version NewestClientVersion { get; set; }
+        public int AnalysisWindowSubsetsThreshold { get; set; }
+        public int AnalysisWindowBinCount { get; set; }
+        public int MinPacketsPerPolling { get; set; }
+
         public ClientConfigDTO() { }
 
         public ClientConfigDTO(dynamic config) 
@@ -24,6 +28,9 @@ namespace MuMonitoring.DTOs
             ClientRefreshTimeSec = (int)config.ClientRefreshTimeSec;
             KeepAliveTimeSec = (int)config.KeepAliveTimeSec;
             NewestClientVersion = new Version((string)config.NewestClientVersion);
+            AnalysisWindowBinCount = (int)config.AnalysisWindowBinCount;
+            AnalysisWindowSubsetsThreshold = (int)config.AnalysisWindowSubsetsThreshold;
+            MinPacketsPerPolling = (int)config.MinPacketsPerPolling;
         }
     }
 }

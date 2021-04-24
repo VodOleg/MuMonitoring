@@ -13,9 +13,8 @@ namespace MuMonitoring.Static
             //
         }
 
-       
-
-        public bool publishActiveProcesses()
+      
+        public bool publishActiveProcesses(List<int> processIdToInclude = null)
         {
             Process[] localAll = Process.GetProcessesByName(StateManager.m_config.ProcessName);
             bool monitoredProcessesChanged = false;
@@ -67,19 +66,23 @@ namespace MuMonitoring.Static
                         continue;
                     }
 
-                    // this is a new process which we should add to the list to monitor
-                    P_Process monitoredProcess = new P_Process();
-                    monitoredProcess.doMonitor = true;
-                    monitoredProcess.process = process;
-                    monitoredProcess.data_processor = new DataProcessor(process.Id);
-                    StateManager.monitored_processes.Add(monitoredProcess);
+                    if(processIdToInclude==null || (processIdToInclude != null && processIdToInclude.Contains(process.Id)))
+                    {
+                        // this is a new process which we should add to the list to monitor
+                        P_Process monitoredProcess = new P_Process();
+                        monitoredProcess.doMonitor = true;
+                        monitoredProcess.process = process;
+                        monitoredProcess.data_processor = new DataProcessor(process.Id);
+                        StateManager.monitored_processes.Add(monitoredProcess);
                     
-                    ETWwrapper.addProcess(process.Id); 
+                        ETWwrapper.addProcess(process.Id); 
 
-                    //sort the monitored processes according to their start time
-                    StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
+                        //sort the monitored processes according to their start time
+                        StateManager.monitored_processes.Sort((x, y) => x.process.StartTime.CompareTo(y.process.StartTime));
 
-                    monitoredProcessesChanged = true;
+                        monitoredProcessesChanged = true;
+
+                    }
                 }
 
             }
