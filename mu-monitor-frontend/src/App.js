@@ -333,7 +333,7 @@ renderGeneral(){
   let ele = <Wrap>
         { window.screen.availWidth > 500 ?
         <div style={{marginLeft:"auto", marginRight:"auto", width:"50%",display:"block"}}>
-          <img src="explanation.gif" height="400" alt="Explanation Gif Should Be Here" /><br />
+          <img src="explanation.gif" width={window.screen.availWidth*0.5} alt="Explanation Gif Should Be Here" /><br />
           </div>
           :
           null
@@ -368,10 +368,10 @@ renderGeneral(){
       <Wrap>
         
         <br />
+        {this.state.showTos ? this.renderToS() : null}
         {
           this.state.requiredLogIn ? 
           <div className="loginForm">
-            {this.state.showTos ? this.renderToS() : null}
             {this.renderLoginDiv()}
             {
               this.state.invalidSessionCredentials ? 
