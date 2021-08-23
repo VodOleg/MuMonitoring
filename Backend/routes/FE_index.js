@@ -92,6 +92,27 @@ FE_router.post('/verifyAndRegister', (req,res)=>{
        }
 })
 
+FE_router.post('/addWebHook', (req,res)=>{
+    BE.logEvent("addWebHook");
+    try{
+        if (UtilityFunctions.isDefined(req.body) 
+        && UtilityFunctions.isDefined(req.body.SessionName)
+        && UtilityFunctions.isDefined(req.body.SessionKey)
+        && UtilityFunctions.isDefined(req.body.WebHookURL))
+        {
+            BE.registerWebhook(req.body.SessionName, req.body.SessionKey, req.body.WebHookURL).then((webHookObj)=>{
+                res.status(200).json({response:true, payload:webHookObj});
+            });
+        }
+        else
+        {
+            res.status(401).json({response:false});
+        }
+    }catch(e){
+        res.status(401).json({response:false});
+    }
+})
+
 FE_router.get('/remove/:email', (req,res)=>{
     BE.logEvent("banningEmail");
     try{

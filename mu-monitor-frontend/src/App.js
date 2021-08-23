@@ -19,8 +19,11 @@ class App extends Component {
       showTos:false,
       showEmailConfirm:false,
       email:"",
+      WebHookURL:"",
       email_place_holder:"your email for notifications",
-      email_color: "white"
+      WebHookURL_placeholder: "URL for a webhook (discord webhook channel URL)",
+      email_color: "white",
+      hookColor: "white"
     }
     this.clientLink ="";
 
@@ -52,7 +55,8 @@ class App extends Component {
         }
         if (loggedIn){
           let email = UF.isDefined(sessions.email) ? sessions.email : "your email for notifications";
-          this.setState({clients:sessions.muclients, email_place_holder:email})
+          let webhook = UF.isDefined(sessions.WebHookURL) ? sessions.WebHookURL : "URL for a webhook (discord webhook channel URL)";
+          this.setState({clients:sessions.muclients, email_place_holder:email,WebHookURL_placeholder:webhook })
         }else{
           this.setState({loggedIn:false})
         }
@@ -72,11 +76,17 @@ class App extends Component {
       if (res.authenticated){
         let _email = this.state.email_place_holder;
         let _color = this.state.email_color;
+        let _hookColor = this.state.hookColor;
+        let _webHook = this.state.WebHookURL_placeholder;
         if( UF.isDefined(res.payload.email)){
           _email = res.payload.email;
           _color = "#dffcc0";
         }
-        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients,email_place_holder:_email ,email_color:_color, invalidSessionCredentials:false });
+        if( UF.isDefined(res.payload.WebHookURL)){
+          _webHook = res.payload.WebHookURL;
+          _hookColor = "#dffcc0";
+        }
+        this.setState({loggedIn:res.authenticated,clients:res.payload.muclients,email_place_holder:_email , WebHookURL_placeholder:_webHook, email_color:_color,hookColor:_hookColor, invalidSessionCredentials:false });
       }
       else
         this.setState({loggedIn:res.authenticated,invalidSessionCredentials:true});
@@ -300,6 +310,15 @@ tosClosed(){
     showTos:false
   })
 }
+registerWebhook(item){
+  BE.registerWebhook(this.state.SessionName, this.state.SessionKey, item.value).then((discordObj)=>{
+    if (UF.isDefined(discordObj)){
+      this.setState({
+        WebHookURL:discordObj.value,
+      })
+    }
+  })
+}
 
 registerEmail(item){
   BE.registerEmail(this.state.SessionName,this.state.SessionKey,item.value).then((emailObj)=>{
@@ -396,7 +415,15 @@ renderGeneral(){
           title="Email" 
           color={this.state.email_color}
           applyCB={this.registerEmail.bind(this)} />
-
+          <InputWithSubmit 
+          value="" 
+          type="discord" 
+          placeholder={this.state.WebHookURL_placeholder} 
+          title="Webhook URL" 
+          applyCB={this.registerWebhook.bind(this)}
+          color = {this.state.hookColor}
+          />
+          
         </div>
 
           {this.state.showEmailConfirm ? this.renderEmailModal(): null}
@@ -419,9 +446,15 @@ renderGeneral(){
 class ProcessUI extends Component {
   
   render(){
-      let d = 0;
+      let d = 0, startTime = 0, monitorStartTime = 0;
       if (UF.isDefined(this.props.data) && UF.isDefined(this.props.data.timestamp)){
         d = new Date(Date.parse(this.props.data.timestamp)).toLocaleString();
+      }
+      if (UF.isDefined(this.props.data) && UF.isDefined(this.props.data.processStarted)){
+        startTime = new Date(Date.parse(this.props.data.processStarted)).toLocaleString();
+      }
+      if (UF.isDefined(this.props.data) && UF.isDefined(this.props.data.monitorStartTime)){
+        monitorStartTime = new Date(Date.parse(this.props.data.monitorStartTime)).toLocaleString();
       }
       let state = {
         processID: UF.isDefined(this.props.data) ? this.props.data.processID : 0,
@@ -429,7 +462,9 @@ class ProcessUI extends Component {
         disconnected: UF.isDefined(this.props.data) ? this.props.data.disconnected : false,
         suspicious: UF.isDefined(this.props.data) ? this.props.data.suspicious : false,
         timestamp: d,
-        notified: UF.isDefined(this.props.data) ? this.props.data.notified : false
+        notified: UF.isDefined(this.props.data) ? this.props.data.notified : false,
+        processStartTime: startTime,
+        monitorStartTime: monitorStartTime
       }
       
       let variant = "success";
@@ -466,8 +501,15 @@ class ProcessUI extends Component {
         </p>
         <hr />
         <p className="mb-0">
-          Timestamp: {state.timestamp}
+          <span style={{fontStyle:"italic"}}>Last Updated:</span> {state.timestamp}
         </p>
+        <p className="mb-0">
+        <span style={{fontStyle:"italic"}}>Process Start Time:</span> {state.processStartTime}
+        </p>
+        <p className="mb-0">
+        <span style={{fontStyle:"italic"}}>Monitor Start Time:</span> {state.monitorStartTime}
+        </p>
+
       </Alert>
       </Wrap>;
       return ele;

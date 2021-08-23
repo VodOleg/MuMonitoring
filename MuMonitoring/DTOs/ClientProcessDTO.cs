@@ -14,6 +14,8 @@ namespace MuMonitoring.DTOs
         public bool disconnected { get; set; }
         public bool suspicious { get; set; }
         public DateTime timestamp { get; set; }
+        public DateTime processStarted { get; set; }
+        public DateTime monitorStartTime { get; set; }
 
 
         public bool Equals(ClientProcessDTO other)

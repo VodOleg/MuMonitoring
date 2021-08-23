@@ -152,6 +152,12 @@ class DB_ {
         this.collection.updateOne(query, newvalues);
     }
 
+    registerWebHookURL(sessionName,sessionKey,webHookURL){
+        let query = { username: sessionName, sessionKey: sessionKey};
+        let newvalues = { $set: { WebHookURL:webHookURL } };
+        this.collection.updateOne(query, newvalues);
+    }
+
     updateSession(creds, clients){
         // update with new mu clients
         // update clients in different func? 

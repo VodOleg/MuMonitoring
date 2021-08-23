@@ -2,6 +2,7 @@ const db_ = require('../config/db');
 const UtilityFunctions = require('./Utils');
 const mailer_ = require('./MailNotifier');
 const semver_ = require('semver');
+const Discord = require('discord.js');
 
 class MuMonitor_Be{
     constructor(){
@@ -77,7 +78,7 @@ class MuMonitor_Be{
             let muclients = this.translateClienttoBE(session.clients);
             // notification
             this.getSessionswithEmail(creds).then((dbsession)=>{
-                if(UtilityFunctions.isDefined(dbsession) && UtilityFunctions.isDefined(dbsession.email)){
+                if(UtilityFunctions.isDefined(dbsession) && (UtilityFunctions.isDefined(dbsession.email) || UtilityFunctions.isDefined(dbsession.WebHookURL))){
                     if (muclients.length !== dbsession.muclients.length){
                         let dead_clients = this.getDeadClients(dbsession.muclients , muclients);
                         let mailMessage = "";
@@ -85,8 +86,13 @@ class MuMonitor_Be{
                             mailMessage += `\n${element.alias} (${element.processID}) was removed from MuMonitor due to inactivity.`
                         });
                         if (dead_clients.length > 0 ){
-                            mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}${this.renderFooterMail(dbsession.email)}`;
-                            this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
+                            if(UtilityFunctions.isDefined(dbsession.email)){
+                                mailMessage += `\n\nSession Name: ${dbsession.username} \nSession Key: ${dbsession.sessionKey}${this.renderFooterMail(dbsession.email)}`;
+                                this.mailer.sendMail(dbsession.email, `Clients removed From Monitor`,mailMessage);
+                            }
+                            if (UtilityFunctions.isDefined(dbsession.WebHookURL)){
+                                this.sendWebhookMessage(dbsession.WebHookURL, mailMessage);
+                            }
                         }
                     }
 
@@ -113,12 +119,28 @@ class MuMonitor_Be{
                                 return;
                             }
                             let note =`\nNote: you won't receive new email notifications for this client (${client.alias}) untill you issue notification reset at www.mumonitor.com.\nSession Name: ${creds.username} \nSession Key: ${creds.sessionKey} ${this.renderFooterMail(dbsession.email)}`;
-                            if (client.suspicious){
-                                let message = `${client.alias} (PID: ${client.processID}) having suspicious behavior.`+note; 
-                                this.mailer.sendMail(dbsession.email, `${client.alias} suspicious behavior`,message);
+                            let pasttime = (Date.now()- new Date(Date.parse(client.monitorStartTime)) );
+                            let pastInitialWarmup = (pasttime) > (1 * 60 * 1000) ; // notify only if 1 min passed since monitor started
+                            if (client.suspicious && pastInitialWarmup){
+                                let message = `${client.alias} (PID: ${client.processID}) having suspicious behavior.`;
+                                
+                                if(UtilityFunctions.isDefined(dbsession.email)){
+                                    this.mailer.sendMail(dbsession.email, `${client.alias} suspicious behavior`,message+note, dbsession.WebHookURL);
+                                }
+                                if (UtilityFunctions.isDefined(dbsession.WebHookURL)){
+                                    this.sendWebhookMessage(dbsession.WebHookURL, message);
+                                }
                                 client["notified"] = true;
-                            }else if(client.disconnected){
-                                this.mailer.sendMail(dbsession.email, `${client.alias} disconnected`,`${client.alias} (PID: ${client.processID}) disconnected.`+note );
+                            }else if(client.disconnected && pastInitialWarmup){
+
+                                let message = `${client.alias} (PID: ${client.processID}) disconnected.`;
+                                if(UtilityFunctions.isDefined(dbsession.email)){
+                                    this.mailer.sendMail(dbsession.email, `${client.alias} disconnected`,message+note);
+                                }
+                                if (UtilityFunctions.isDefined(dbsession.WebHookURL)){
+                                    this.sendWebhookMessage(dbsession.WebHookURL, message);
+                                }
+                                
                                 client.notified = true
                             }
                         });
@@ -190,6 +212,10 @@ class MuMonitor_Be{
         this.db.registerEmail(sessionName,SessionKey,new_email);
     }
 
+    async registerWebhook(sessionName, SessionKey, webHookURL){
+        this.db.registerWebHookURL(sessionName, SessionKey, webHookURL);
+    }
+
     async resetNotification(SessionName, SessionKey, processID){
         this.db.resetNotification(SessionName, SessionKey, processID);
     }
@@ -226,10 +252,20 @@ class MuMonitor_Be{
 
     validateClientVersion(clientVersion){
         // version check
-        let clientTrimmed = clientVersion.substring(0, clientVersion.lastIndexOf("."));
-        let versionValid = semver_.gt(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion) ||
-                            semver_.eq(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion);
+        let versionValid = true;
+        try{
+            let clientTrimmed = clientVersion.substring(0, clientVersion.lastIndexOf("."));
+            versionValid = semver_.gt(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion) ||
+                                semver_.eq(clientTrimmed, this.clientsConfig.ClientsConfig.NewestClientVersion);
+        }catch(e){
+            console.error(JSON.stringify(e));
+        }
         return versionValid;
+    }
+
+    async sendWebhookMessage(url, message){
+        let webhook = new Discord.WebhookClient({url:url}); 
+        webhook.send(message);
     }
 
     async userAuth(body){

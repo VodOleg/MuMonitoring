@@ -19,6 +19,8 @@ namespace MuMonitoring
         // API strings 
         private static string m_Const_startSession = "/StartSession";
         private static string m_Const_updateSession = "/UpdateSession";
+        private static string m_Const_addWebHook = "/addWebHook";
+        private static string m_Const_registerEmail = "/registerEmail";
         private static System.Threading.Mutex oSingleInstance;
         
         
@@ -96,6 +98,33 @@ namespace MuMonitoring
                     ClientConfigDTO config = new ClientConfigDTO(response.data.ClientConfig);
                     bool versionValid = validateVersion(config.NewestClientVersion);
                     StateManager.Init(credentials, config);
+                    var g_config = Utils.getLocalConfig();
+                    if (g_config != null)
+                    {
+                        string webhookUrl = g_config["WebHookURL"];
+                        string email = g_config["Email"];
+                        
+                        //register local webhhok
+                        if (!String.IsNullOrWhiteSpace(webhookUrl))
+                        {
+                            JObject u = new JObject();
+                            u["WebHookURL"] = webhookUrl;
+                            u["SessionName"] = credentials.username;
+                            u["SessionKey"] = credentials.sessionKey;
+                            var webHookContent = new StringContent(u.ToString(), Encoding.UTF8, "application/json");
+                            sendPost(BackendURL + m_Const_addWebHook, webHookContent);
+                        }
+                        // register local email
+                        if (!String.IsNullOrWhiteSpace(email))
+                        {
+                            JObject u = new JObject();
+                            u["Email"] = email;
+                            u["SessionName"] = credentials.username;
+                            u["SessionKey"] = credentials.sessionKey;
+                            var emailContent = new StringContent(u.ToString(), Encoding.UTF8, "application/json");
+                            sendPost(BackendURL + m_Const_registerEmail, emailContent);
+                        }
+                    }
                     res_ = "";
                 }
                 else if ( response != null)

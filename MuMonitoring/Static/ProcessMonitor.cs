@@ -72,6 +72,7 @@ namespace MuMonitoring.Static
                         P_Process monitoredProcess = new P_Process();
                         monitoredProcess.doMonitor = true;
                         monitoredProcess.process = process;
+                        monitoredProcess.monitorStartTime = DateTime.Now;
                         monitoredProcess.data_processor = new DataProcessor(process.Id);
                         StateManager.monitored_processes.Add(monitoredProcess);
                     
@@ -105,7 +106,9 @@ namespace MuMonitoring.Static
                         alias = process.alias,
                         disconnected = somedata.LastOrDefault().disconnected,
                         suspicious = somedata.LastOrDefault().suspicious,
-                        timestamp = somedata.LastOrDefault().timestamp
+                        timestamp = somedata.LastOrDefault().timestamp,
+                        processStarted = process.process.StartTime,
+                        monitorStartTime = process.monitorStartTime
                     };
                     StateManager.addData(newData);
 
@@ -132,7 +135,9 @@ namespace MuMonitoring.Static
                         processID = process.process.Id,
                         alias = process.alias,                        
                         suspicious = true,
-                        timestamp = DateTime.Now
+                        timestamp = DateTime.Now,
+                        processStarted = process.process.StartTime,
+                        monitorStartTime = process.monitorStartTime
                     };
                     StateManager.addData(newData);
                 }

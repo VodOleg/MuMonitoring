@@ -35,6 +35,19 @@ class BE_Comm{
         return response;
     }
     
+    async registerWebhook(SessionName,SessionKey,webHookURL){
+        let body={
+            'SessionName':SessionName,
+            'SessionKey':SessionKey,
+            'WebHookURL':webHookURL
+        }
+        let res = await this.send_request('/addWebHook',body);
+        if(this.processResponse(res)){
+            return res.data.payload;
+        }
+        return res;
+    }
+
     async registerEmail(SessionName,SessionKey,email){
         let body={
             'SessionName':SessionName,

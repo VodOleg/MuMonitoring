@@ -15,6 +15,7 @@ namespace MuMonitoring.DTOs
         public string alias { get; set; } 
         public bool disconnected { get; set; }
         public bool suspicious { get; set; }
+        public DateTime monitorStartTime { get; set; }
 
         public void Dispose()
         {
